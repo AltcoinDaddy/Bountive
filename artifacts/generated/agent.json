@@ -1,0 +1,39 @@
+{
+  "agent_name": "Bountive Operator",
+  "description": "Autonomous GitHub-first task bounty operator for safe, budget-aware software missions.",
+  "operator_wallet": "0x0000000000000000000000000000000000000000",
+  "identity_reference": "bountive-operator-dev",
+  "supported_tools": [
+    "github",
+    "git",
+    "npm",
+    "pnpm",
+    "yarn",
+    "prisma",
+    "sqlite"
+  ],
+  "supported_task_categories": [
+    "bug",
+    "documentation",
+    "tests",
+    "small refactors"
+  ],
+  "compute_budget": {
+    "max_model_calls": 20,
+    "max_tool_calls": 40,
+    "max_retries": 2,
+    "max_changed_files": 8
+  },
+  "guardrails": {
+    "default_mode": "dry_run",
+    "live_submission": false,
+    "destructive_shell_commands_blocked": true,
+    "allowlisted_live_repos_only": true,
+    "approval_requires_passing_checks": true
+  },
+  "execution_modes": [
+    "dry_run",
+    "live"
+  ],
+  "version": "0.1.0"
+}

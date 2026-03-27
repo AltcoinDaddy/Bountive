@@ -1,0 +1,72 @@
+[
+  {
+    "id": "cmn95crzb0004p721zoubcg7b",
+    "missionId": "cmn95crz90001p721px4sy3we",
+    "agentName": "Scout Agent",
+    "stage": "discover",
+    "action": "search_issues",
+    "toolName": "github.search.issues",
+    "inputSummary": "labels=good first issue,help wanted,bug,documentation",
+    "outputSummary": "Discovered 6 candidate issues across 3 repositories.",
+    "success": true,
+    "errorMessage": null,
+    "retryIndex": 0,
+    "createdAt": "2026-03-27T16:59:53.640Z"
+  },
+  {
+    "id": "cmn95crzb0005p721k2ooo06m",
+    "missionId": "cmn95crz90001p721px4sy3we",
+    "agentName": "Planner Agent",
+    "stage": "plan",
+    "action": "score_candidates",
+    "toolName": "scoring-engine",
+    "inputSummary": "Scored candidates for clarity, complexity, buildability.",
+    "outputSummary": "Selected vercel/next.js#00000 with 0.82 confidence.",
+    "success": true,
+    "errorMessage": null,
+    "retryIndex": 0,
+    "createdAt": "2026-03-27T16:59:53.640Z"
+  },
+  {
+    "id": "cmn95crzb0006p721ze1sjdp3",
+    "missionId": "cmn95crz90001p721px4sy3we",
+    "agentName": "Developer Agent",
+    "stage": "execute",
+    "action": "prepare_workspace",
+    "toolName": "git clone",
+    "inputSummary": "workspace=artifacts/workspaces/sample-mission",
+    "outputSummary": "Cloned repository and captured repo scripts for dry-run execution.",
+    "success": true,
+    "errorMessage": null,
+    "retryIndex": 0,
+    "createdAt": "2026-03-27T16:59:53.640Z"
+  },
+  {
+    "id": "cmn95crzb0007p721jupijgl1",
+    "missionId": "cmn95crz90001p721px4sy3we",
+    "agentName": "QA Agent",
+    "stage": "verify",
+    "action": "run_checks",
+    "toolName": "verification-engine",
+    "inputSummary": "build,test,lint",
+    "outputSummary": "Build and lint passed, tests skipped due to issue scope.",
+    "success": true,
+    "errorMessage": null,
+    "retryIndex": 0,
+    "createdAt": "2026-03-27T16:59:53.640Z"
+  },
+  {
+    "id": "cmn95crzb0008p721isvvv2e2",
+    "missionId": "cmn95crz90001p721px4sy3we",
+    "agentName": "Submitter Agent",
+    "stage": "submit",
+    "action": "draft_submission",
+    "toolName": "artifact-generator",
+    "inputSummary": "dry_run=true",
+    "outputSummary": "Generated branch, commit, PR title, PR body, and proof record.",
+    "success": true,
+    "errorMessage": null,
+    "retryIndex": 0,
+    "createdAt": "2026-03-27T16:59:53.640Z"
+  }
+]

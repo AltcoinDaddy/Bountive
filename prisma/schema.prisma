@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MissionStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  ABORTED
+}
+
+enum MissionMode {
+  DRY_RUN
+  LIVE
+}
+
+enum MissionStage {
+  DISCOVER
+  PLAN
+  EXECUTE
+  VERIFY
+  SUBMIT
+  COMPLETE
+  HALTED
+}
+
+enum CandidateStatus {
+  DISCOVERED
+  SELECTED
+  REJECTED
+  EXECUTED
+}
+
+enum CheckStatus {
+  PENDING
+  PASSED
+  FAILED
+  SKIPPED
+}
+
+enum QADecision {
+  APPROVED
+  RETRY_REQUIRED
+  REJECTED
+}
+
+enum SubmissionStatus {
+  DRAFT_READY
+  LIVE_PENDING
+  LIVE_SUBMITTED
+  BLOCKED
+}
+
+model Mission {
+  id                    String               @id @default(cuid())
+  title                 String
+  status                MissionStatus        @default(QUEUED)
+  mode                  MissionMode          @default(DRY_RUN)
+  selectedIssueUrl      String?              @map("selected_issue_url")
+  selectedRepo          String?              @map("selected_repo")
+  currentStage          MissionStage         @default(DISCOVER) @map("current_stage")
+  retriesUsed           Int                  @default(0) @map("retries_used")
+  modelCallsUsed        Int                  @default(0) @map("model_calls_used")
+  toolCallsUsed         Int                  @default(0) @map("tool_calls_used")
+  durationMs            Int                  @default(0) @map("duration_ms")
+  confidenceThreshold   Float                @default(0.68) @map("confidence_threshold")
+  toolCallLimit         Int                  @default(40) @map("tool_call_limit")
+  modelCallLimit        Int                  @default(20) @map("model_call_limit")
+  candidateTasksScanned Int                  @default(0) @map("candidate_tasks_scanned")
+  changedFilesCount     Int                  @default(0) @map("changed_files_count")
+  allowLiveSubmission   Boolean              @default(false) @map("allow_live_submission")
+  allowApproveOnFailure Boolean              @default(false) @map("allow_approve_on_failure")
+  maxRetries            Int                  @default(2) @map("max_retries")
+  guardrailsJson        String?              @map("guardrails_json")
+  configJson            String?              @map("config_json")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  candidateTasks        CandidateTask[]
+  eventLogs             AgentEventLog[]
+  verificationReport    VerificationReport?
+  submission            Submission?
+  proofRecords          ProofRecord[]
+
+  @@map("missions")
+}
+
+model CandidateTask {
+  id               String          @id @default(cuid())
+  missionId        String          @map("mission_id")
+  repo             String
+  issueNumber      Int             @map("issue_number")
+  issueTitle       String          @map("issue_title")
+  issueUrl         String          @map("issue_url")
+  labels           String
+  score            Float
+  confidence       Float
+  reasonSelected   String?         @map("reason_selected")
+  reasonRejected   String?         @map("reason_rejected")
+  status           CandidateStatus @default(DISCOVERED)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  mission          Mission         @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@index([missionId])
+  @@map("candidate_tasks")
+}
+
+model AgentEventLog {
+  id            String   @id @default(cuid())
+  missionId     String   @map("mission_id")
+  agentName     String   @map("agent_name")
+  stage         String
+  action        String
+  toolName      String?  @map("tool_name")
+  inputSummary  String?  @map("input_summary")
+  outputSummary String?  @map("output_summary")
+  success       Boolean  @default(true)
+  errorMessage  String?  @map("error_message")
+  retryIndex    Int      @default(0) @map("retry_index")
+  createdAt     DateTime @default(now()) @map("created_at")
+  mission       Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@index([missionId])
+  @@map("agent_event_logs")
+}
+
+model VerificationReport {
+  id           String      @id @default(cuid())
+  missionId     String      @unique @map("mission_id")
+  buildStatus   CheckStatus @default(PENDING) @map("build_status")
+  lintStatus    CheckStatus @default(PENDING) @map("lint_status")
+  testStatus    CheckStatus @default(PENDING) @map("test_status")
+  criteriaMet   Boolean     @default(false) @map("criteria_met")
+  qaDecision    QADecision  @default(REJECTED) @map("qa_decision")
+  qaNotes       String      @default("") @map("qa_notes")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  mission       Mission     @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@map("verification_reports")
+}
+
+model Submission {
+  id               String           @id @default(cuid())
+  missionId        String           @unique @map("mission_id")
+  branchName       String           @map("branch_name")
+  commitHash       String?          @map("commit_hash")
+  commitMessage    String?          @map("commit_message")
+  prTitle          String           @map("pr_title")
+  prBody           String           @map("pr_body")
+  prUrl            String?          @map("pr_url")
+  changedFiles     String           @default("[]") @map("changed_files")
+  verificationSummary String        @default("") @map("verification_summary")
+  submissionStatus SubmissionStatus @default(DRAFT_READY) @map("submission_status")
+  submittedAt      DateTime?        @map("submitted_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  mission          Mission          @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
+
+model IdentityRecord {
+  id                 String        @id @default(cuid())
+  operatorWallet     String        @map("operator_wallet")
+  agentName          String        @map("agent_name")
+  network            String
+  registrationTxHash String?       @map("registration_tx_hash")
+  manifestUri        String?       @map("manifest_uri")
+  identityReference  String        @unique @map("identity_reference")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  proofRecords       ProofRecord[]
+
+  @@map("identity_records")
+}
+
+model ProofRecord {
+  id               String         @id @default(cuid())
+  missionId        String         @map("mission_id")
+  identityRecordId String         @map("identity_record_id")
+  issueUrl         String         @map("issue_url")
+  repoUrl          String         @map("repo_url")
+  commitHash       String?        @map("commit_hash")
+  prUrl            String?        @map("pr_url")
+  verificationHash String         @map("verification_hash")
+  logHash          String         @map("log_hash")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  mission          Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  identityRecord   IdentityRecord @relation(fields: [identityRecordId], references: [id], onDelete: Cascade)
+
+  @@index([missionId])
+  @@index([identityRecordId])
+  @@map("proof_records")
+}

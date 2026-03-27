@@ -1,0 +1,15 @@
+<svg width="330" height="72" viewBox="0 0 330 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Bountive logo light</title>
+  <desc id="desc">The Bountive logo for dark backgrounds.</desc>
+  <g transform="translate(0 2)">
+    <rect x="10" y="10" width="14" height="60" rx="7" fill="#FCFCFD"/>
+    <rect x="26" y="10" width="26" height="14" rx="7" fill="#FCFCFD"/>
+    <rect x="50" y="16" width="16" height="16" rx="8" fill="#FCFCFD"/>
+    <rect x="26" y="33" width="18" height="14" rx="7" fill="#FCFCFD"/>
+    <rect x="26" y="56" width="26" height="14" rx="7" fill="#FCFCFD"/>
+    <rect x="50" y="48" width="16" height="16" rx="8" fill="#FCFCFD"/>
+  </g>
+  <text x="94" y="45" fill="#FCFCFD" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="700" letter-spacing="-1.3">
+    Bountive
+  </text>
+</svg>
