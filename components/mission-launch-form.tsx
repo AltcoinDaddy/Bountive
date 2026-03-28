@@ -5,9 +5,10 @@ import { SurfaceCard } from "@/components/surface-card";
 
 type MissionLaunchFormProps = {
   action: (formData: FormData) => void;
+  errorMessage?: string | null;
 };
 
-export function MissionLaunchForm({ action }: MissionLaunchFormProps) {
+export function MissionLaunchForm({ action, errorMessage }: MissionLaunchFormProps) {
   const defaults = defaultMissionInput();
 
   return (
@@ -111,8 +112,22 @@ export function MissionLaunchForm({ action }: MissionLaunchFormProps) {
           </label>
         </div>
 
+        <p className="md:col-span-2 text-sm leading-6 text-[var(--muted-foreground)]">
+          Live mode only publishes a draft pull request when live submissions are enabled in config, a GitHub token is present, and the selected repository is in the active allowlist.
+        </p>
+
+        <p className="md:col-span-2 text-sm leading-6 text-[var(--muted-foreground)]">
+          Missions launched from the app are queued first so a worker can process them with clearer lifecycle tracking and safer operational controls.
+        </p>
+
+        {errorMessage ? (
+          <div className="md:col-span-2 rounded-2xl border border-[rgba(180,35,24,0.2)] bg-[rgba(180,35,24,0.06)] px-4 py-3 text-sm text-[var(--foreground)]">
+            {errorMessage}
+          </div>
+        ) : null}
+
         <div className="md:col-span-2">
-          <FormSubmitButton label="Launch mission" pendingLabel="Running mission..." />
+          <FormSubmitButton label="Queue mission" pendingLabel="Queueing mission..." />
         </div>
       </form>
     </SurfaceCard>

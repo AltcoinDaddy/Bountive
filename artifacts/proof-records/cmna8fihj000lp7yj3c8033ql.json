@@ -1,0 +1,12 @@
+{
+  "id": "cmna8fihj000lp7yj3c8033ql",
+  "missionId": "cmna8fhrj0001p7yj17zp1ej9",
+  "identityRecordId": "cmna82bxc0002p7gkrjkl58mk",
+  "issueUrl": "https://github.com/bountive-fixtures/demo-structured-repo/issues/5",
+  "repoUrl": "https://github.com/bountive-fixtures/demo-structured-repo",
+  "commitHash": "70d22b73cd9f99bb8833fb0233d70aa72c9a7be6",
+  "prUrl": null,
+  "verificationHash": "0xfc4efa3404f57009cf44409573cd1b9f938af88aaaad77e83de2ad147f41f9ea",
+  "logHash": "0xada05e91880de5d324757e2889d5d7317be17174b64107b0072604539efb4c89",
+  "createdAt": "2026-03-28T11:13:46.327Z"
+}

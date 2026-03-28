@@ -1,0 +1,9 @@
+{
+  "buildStatus": "FAILED",
+  "lintStatus": "FAILED",
+  "testStatus": "FAILED",
+  "criteriaMet": false,
+  "qaDecision": "RETRY_REQUIRED",
+  "qaNotes": "build failed: sh: turbo: command not found lint failed: sh: run-p: command not found test failed: sh: cross-env: command not found",
+  "summary": "build=failed, lint=failed, test=failed"
+}

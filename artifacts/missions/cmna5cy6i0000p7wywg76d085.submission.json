@@ -1,0 +1,15 @@
+{
+  "branchName": "bountive/clarify-docs-for-the-image-remote-pattern-warnin",
+  "commitHash": "e1fb60280c9aace994e1b799c57835cb36e5a431",
+  "commitMessage": "docs: clarify docs for the image remote pattern warning",
+  "executionAdapterId": "remote-pattern-docs",
+  "taskCategory": "documentation",
+  "prTitle": "docs: clarify docs for the image remote pattern warning",
+  "prBody": "## Summary\n- prepare a safe autonomous mission draft from the selected issue\n- keep live submission disabled unless explicitly enabled and allowlisted\n- attach verification outcomes and operator proof metadata\n\n## Verification\nbuild: passed\nlint: passed\ntest: passed\n\n## Notes\n- Workspace prepared successfully.\n- Created isolated branch bountive/clarify-docs-for-the-image-remote-pattern-warnin.\n- Developer execution remains strategy-driven and only mutates repositories when a deterministic patch rule matches the selected task.\n- Execution adapter selected: Remote pattern docs patch.\n- Applied deterministic documentation patch for the local remote-pattern fixture repository.\n- Adapter outcome: Documentation warning copy updated with explicit malformed-field guidance and example content.",
+  "prUrl": null,
+  "submissionStatus": "DRAFT_READY",
+  "changedFiles": [
+    "docs/remote-pattern-warning.md"
+  ],
+  "verificationSummary": "install=passed, build=passed, lint=passed, test=passed"
+}

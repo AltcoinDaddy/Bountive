@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, FileCode2, Fingerprint, LayoutDashboard, Logs, Rocket, ScrollText } from "lucide-react";
+import { Activity, FileCode2, Fingerprint, LayoutDashboard, Logs, RadioTower, Rocket, ScrollText } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const navigation = [
   { href: "/tasks", label: "Candidate Tasks", icon: FileCode2 },
   { href: "/timeline", label: "Execution Timeline", icon: Activity },
   { href: "/logs", label: "Logs", icon: Logs },
+  { href: "/monitoring", label: "Monitoring", icon: RadioTower },
   { href: "/identity", label: "Identity", icon: Fingerprint },
   { href: "/submission", label: "Submission", icon: ScrollText }
 ] as const;

@@ -28,7 +28,30 @@ async function main() {
   await prisma.agentEventLog.deleteMany();
   await prisma.candidateTask.deleteMany();
   await prisma.mission.deleteMany();
+  await prisma.approvalPolicy.deleteMany();
+  await prisma.workspace.deleteMany();
   await prisma.identityRecord.deleteMany();
+
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: "Default Workspace",
+      slug: "default",
+      authMode: process.env.AUTH_MODE ?? "local",
+      operatorEmail: process.env.BOUNTIVE_OPERATOR_EMAIL ?? "operator@bountive.local",
+      approvalPolicy: {
+        create: {
+          requireHumanApprovalForLive: true,
+          allowAutoApproveDryRun: true,
+          allowApproveFailedChecks: false,
+          maxPatchFiles: 8,
+          allowedTaskCategories: JSON.stringify(["documentation", "developer-experience copy", "configuration", "tests"])
+        }
+      }
+    },
+    include: {
+      approvalPolicy: true
+    }
+  });
 
   const identity = await prisma.identityRecord.create({
     data: {
@@ -43,6 +66,7 @@ async function main() {
 
   const mission = await prisma.mission.create({
     data: {
+      workspaceId: workspace.id,
       title: "Dry-run triage for help-wanted issue",
       status: MissionStatus.COMPLETED,
       mode: MissionMode.DRY_RUN,
@@ -136,7 +160,7 @@ async function main() {
         action: "prepare_workspace",
         toolName: "git clone",
         inputSummary: "workspace=artifacts/workspaces/sample-mission",
-        outputSummary: "Cloned repository and captured repo scripts for dry-run execution.",
+        outputSummary: "Cloned repository, created an isolated branch, and prepared deterministic execution strategies.",
         success: true,
         retryIndex: 0
       },
@@ -146,8 +170,8 @@ async function main() {
         stage: "verify",
         action: "run_checks",
         toolName: "verification-engine",
-        inputSummary: "build,test,lint",
-        outputSummary: "Build and lint passed, tests skipped due to issue scope.",
+        inputSummary: "install,build,test,lint",
+        outputSummary: "Install skipped for the seeded demo. Build and lint passed, tests skipped due to issue scope.",
         success: true,
         retryIndex: 0
       },
@@ -168,6 +192,7 @@ async function main() {
   const verification = await prisma.verificationReport.create({
     data: {
       missionId: mission.id,
+      installStatus: CheckStatus.SKIPPED,
       buildStatus: CheckStatus.PASSED,
       lintStatus: CheckStatus.PASSED,
       testStatus: CheckStatus.SKIPPED,
@@ -183,6 +208,8 @@ async function main() {
       branchName: "bountive/issue-00000-warning-copy",
       commitHash: null,
       commitMessage: "docs: clarify invalid image config warning",
+      executionAdapterId: "seeded-demo",
+      taskCategory: "documentation",
       prTitle: "docs: clarify invalid image config warning",
       prBody: "## Summary\n- clarify the invalid image config warning copy\n- preserve existing behavior and API surface\n- include dry-run verification notes\n\n## Verification\n- build: passed\n- lint: passed\n- test: skipped",
       prUrl: null,
@@ -209,9 +236,12 @@ async function main() {
     agent_name: "Bountive Operator",
     description: "Autonomous GitHub-first task bounty operator for safe, budget-aware software missions.",
     operator_wallet: identity.operatorWallet,
+    network: identity.network,
     identity_reference: identity.identityReference,
-    supported_tools: ["github", "git", "npm", "pnpm", "yarn", "prisma", "sqlite"],
-    supported_task_categories: ["bug", "documentation", "tests", "small refactors"],
+    registration_tx_hash: identity.registrationTxHash,
+    manifest_uri: identity.manifestUri,
+    supported_tools: ["github", "git", "npm", "pnpm", "yarn", "prisma", "sqlite", "postgresql", "redis"],
+    supported_task_categories: ["documentation", "developer-experience copy"],
     compute_budget: {
       max_model_calls: 20,
       max_tool_calls: 40,
@@ -226,6 +256,7 @@ async function main() {
       approval_requires_passing_checks: true
     },
     execution_modes: ["dry_run", "live"],
+    proof_format_version: "bountive-proof/v1",
     version: "0.1.0"
   };
 

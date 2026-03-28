@@ -59,6 +59,7 @@ enum SubmissionStatus {
 
 model Mission {
   id                    String               @id @default(cuid())
+  workspaceId           String?              @map("workspace_id")
   title                 String
   status                MissionStatus        @default(QUEUED)
   mode                  MissionMode          @default(DRY_RUN)
@@ -79,16 +80,54 @@ model Mission {
   maxRetries            Int                  @default(2) @map("max_retries")
   guardrailsJson        String?              @map("guardrails_json")
   configJson            String?              @map("config_json")
+  queuedAt              DateTime             @default(now()) @map("queued_at")
+  startedAt             DateTime?            @map("started_at")
+  completedAt           DateTime?            @map("completed_at")
+  workerId              String?              @map("worker_id")
+  lastHeartbeatAt       DateTime?            @map("last_heartbeat_at")
+  failureReason         String?              @map("failure_reason")
   createdAt             DateTime             @default(now()) @map("created_at")
   updatedAt             DateTime             @updatedAt @map("updated_at")
+  workspace             Workspace?           @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   candidateTasks        CandidateTask[]
   eventLogs             AgentEventLog[]
   verificationReport    VerificationReport?
   submission            Submission?
   proofRecords          ProofRecord[]
 
+  @@index([workspaceId])
   @@map("missions")
 }
+
+model Workspace {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  authMode        String           @default("local") @map("auth_mode")
+  operatorEmail   String           @map("operator_email")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  approvalPolicy  ApprovalPolicy?
+  missions        Mission[]
+
+  @@map("workspaces")
+}
+
+model ApprovalPolicy {
+  id                         String    @id @default(cuid())
+  workspaceId                String    @unique @map("workspace_id")
+  requireHumanApprovalForLive Boolean  @default(true) @map("require_human_approval_for_live")
+  allowAutoApproveDryRun     Boolean   @default(true) @map("allow_auto_approve_dry_run")
+  allowApproveFailedChecks   Boolean   @default(false) @map("allow_approve_failed_checks")
+  maxPatchFiles              Int       @default(8) @map("max_patch_files")
+  allowedTaskCategories      String    @default("[]") @map("allowed_task_categories")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+  workspace                  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("approval_policies")
+}
+
 
 model CandidateTask {
   id               String          @id @default(cuid())
@@ -133,6 +172,7 @@ model AgentEventLog {
 model VerificationReport {
   id           String      @id @default(cuid())
   missionId     String      @unique @map("mission_id")
+  installStatus CheckStatus @default(PENDING) @map("install_status")
   buildStatus   CheckStatus @default(PENDING) @map("build_status")
   lintStatus    CheckStatus @default(PENDING) @map("lint_status")
   testStatus    CheckStatus @default(PENDING) @map("test_status")
@@ -152,6 +192,8 @@ model Submission {
   branchName       String           @map("branch_name")
   commitHash       String?          @map("commit_hash")
   commitMessage    String?          @map("commit_message")
+  executionAdapterId String?        @map("execution_adapter_id")
+  taskCategory     String?          @map("task_category")
   prTitle          String           @map("pr_title")
   prBody           String           @map("pr_body")
   prUrl            String?          @map("pr_url")

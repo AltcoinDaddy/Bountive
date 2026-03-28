@@ -1,0 +1,11 @@
+{
+  "branchName": "bountive/clarify-docs-for-the-image-remote-pattern-warnin",
+  "commitHash": null,
+  "commitMessage": "docs: clarify docs for the image remote pattern warning",
+  "prTitle": "docs: clarify docs for the image remote pattern warning",
+  "prBody": "## Summary\n- prepare a safe autonomous mission draft from the selected issue\n- keep live submission disabled unless explicitly enabled and allowlisted\n- attach verification outcomes and operator proof metadata\n\n## Verification\nbuild: failed\nlint: failed\ntest: failed\n\n## Notes\n- Workspace prepared successfully.\n- Developer agent remains conservative in MVP mode and does not mutate repositories without a deterministic high-confidence patch strategy.",
+  "prUrl": null,
+  "submissionStatus": "DRAFT_READY",
+  "changedFiles": [],
+  "verificationSummary": "build=failed, lint=failed, test=failed"
+}

@@ -1,0 +1,15 @@
+{
+  "branchName": "bountive/update-the-verification-summary-expectation-to-i",
+  "commitHash": "c01e726bb8c6cfdf31f530abb2304ac9b08a795b",
+  "commitMessage": "fix: update the verification summary expectation to include install status",
+  "executionAdapterId": "verification-summary-test",
+  "taskCategory": "tests",
+  "prTitle": "fix: update the verification summary expectation to include install status",
+  "prBody": "## Summary\n- prepare a safe autonomous mission draft from the selected issue\n- keep live submission disabled unless explicitly enabled and allowlisted\n- attach verification outcomes and operator proof metadata\n\n## Verification\nbuild: passed\nlint: passed\ntest: passed\n\n## Notes\n- Workspace prepared successfully.\n- Created isolated branch bountive/update-the-verification-summary-expectation-to-i.\n- Developer execution remains strategy-driven and only mutates repositories when a deterministic patch rule matches the selected task.\n- Execution adapter selected: Verification summary test fixture patch.\n- Applied deterministic verification-summary fixture patch for the local test fixture repository.\n- Adapter outcome: Verification summary expectation updated to include install status as the leading segment.",
+  "prUrl": null,
+  "submissionStatus": "DRAFT_READY",
+  "changedFiles": [
+    "test/fixtures/verification-summary.txt"
+  ],
+  "verificationSummary": "install=passed, build=passed, lint=passed, test=passed"
+}

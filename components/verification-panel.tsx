@@ -8,10 +8,14 @@ export function VerificationPanel({ report }: { report: VerificationReport | nul
     <SurfaceCard>
       <SectionHeading
         title="Verification"
-        description="Bountive treats build, lint, and test outcomes as approval gates unless policy explicitly loosens them."
+        description="Bountive treats install, build, lint, and test outcomes as approval gates unless policy explicitly loosens them."
       />
       {report ? (
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Install</div>
+            <div className="mt-2"><StatusBadge value={report.installStatus} /></div>
+          </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Build</div>
             <div className="mt-2"><StatusBadge value={report.buildStatus} /></div>

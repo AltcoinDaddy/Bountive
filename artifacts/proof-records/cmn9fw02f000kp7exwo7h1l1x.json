@@ -1,0 +1,12 @@
+{
+  "id": "cmn9fw02f000kp7exwo7h1l1x",
+  "missionId": "cmn9fvyhg0000p7exarnvdpdj",
+  "identityRecordId": "cmn9fgvyv0000p75wqpw3t6s8",
+  "issueUrl": "https://github.com/bountive-fixtures/demo-config-repo/issues/3",
+  "repoUrl": "https://github.com/bountive-fixtures/demo-config-repo",
+  "commitHash": "2ad4d06a84af78c2877d408428bfef687d8b194e",
+  "prUrl": null,
+  "verificationHash": "0x044b402d8347a9e7ed7610515e180d4d71dcfb70390918145ff25f195b685274",
+  "logHash": "0x85dfdf80b8754a342592e494456b01951f48440a726ab413dd97f15fb54cb6f0",
+  "createdAt": "2026-03-27T21:54:46.744Z"
+}

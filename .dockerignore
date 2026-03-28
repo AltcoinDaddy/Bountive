@@ -1,0 +1,7 @@
+.git
+.next
+node_modules
+artifacts/workspaces
+prisma/dev.db
+dev.db
+npm-debug.log

@@ -1,0 +1,63 @@
+{
+  "proof_format": "bountive-proof/v1",
+  "proof_id": "cmna9a8sd000lp7s5ar1981ld",
+  "created_at": "2026-03-28T11:37:40.093Z",
+  "identity": {
+    "agent_name": "Bountive Operator",
+    "operator_wallet": "0x0000000000000000000000000000000000000000",
+    "network": "base-sepolia",
+    "identity_reference": "bountive-operator-dev",
+    "registration_tx_hash": null,
+    "manifest_uri": "artifacts/generated/agent.json"
+  },
+  "mission": {
+    "mission_id": "cmna9a71u0001p7s5sp6snagv",
+    "title": "Structured JSON patch mission",
+    "mode": "DRY_RUN",
+    "status": "COMPLETED",
+    "selected_issue_url": "https://github.com/bountive-fixtures/demo-json-repo/issues/6",
+    "selected_repo": "bountive-fixtures/demo-json-repo"
+  },
+  "submission": {
+    "branch_name": "bountive/enable-proof-publishing-in-the-operator-config-t",
+    "commit_hash": "9894399ed8678304b1651e8c7d7e3a73fa199f8e",
+    "pr_url": null,
+    "submission_status": "DRAFT_READY"
+  },
+  "verification": {
+    "install_status": "PASSED",
+    "build_status": "PASSED",
+    "lint_status": "PASSED",
+    "test_status": "PASSED",
+    "criteria_met": true,
+    "qa_decision": "APPROVED",
+    "qa_notes": "Dependencies installed successfully in guarded mode with lifecycle scripts disabled. build passed lint passed test passed"
+  },
+  "proofs": {
+    "proof_hash": "0x339aa2a1efe2d20dd1e4779551f5ef456176d4a02d76977d9ead82200e35aace",
+    "verification_hash": "0x2ee1adca08bd93b08ba6161cd06339cfeaf6e011b495230ab741803e8419c83c",
+    "log_hash": "0x29c51d9031c22198d05a410a49db486221369a00afcd50bbc8c00b05f238a255",
+    "signature": null,
+    "signer_address": null
+  },
+  "signing": {
+    "signed": false,
+    "signerAddress": null,
+    "signature": null,
+    "note": "Proof signing key is not configured."
+  },
+  "onchain": {
+    "status": "inactive",
+    "network": "base-sepolia",
+    "registryAddress": null,
+    "note": "Onchain proof publishing is disabled.",
+    "txHash": null
+  },
+  "references": {
+    "proof_record_artifact": "artifacts/proof-records/cmna9a8sd000lp7s5ar1981ld.json",
+    "mission_summary_artifact": "artifacts/missions/cmna9a71u0001p7s5sp6snagv.summary.json",
+    "verification_artifact": "artifacts/missions/cmna9a71u0001p7s5sp6snagv.verification.json",
+    "submission_artifact": "artifacts/missions/cmna9a71u0001p7s5sp6snagv.submission.json",
+    "agent_manifest_artifact": "artifacts/generated/agent.json"
+  }
+}

@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { ProtectedAppLayout } from "@/components/protected-app-layout";
 
-export default function LogoLayout({
+export default async function LogoLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  return <ProtectedAppLayout nextPath="/logo">{children}</ProtectedAppLayout>;
 }

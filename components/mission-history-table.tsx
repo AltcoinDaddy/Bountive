@@ -22,6 +22,7 @@ export function MissionHistoryTable({ missions }: { missions: MissionHistoryRow[
                 <th className="px-3 py-3 font-semibold">Status</th>
                 <th className="px-3 py-3 font-semibold">Mode</th>
                 <th className="px-3 py-3 font-semibold">Stage</th>
+                <th className="px-3 py-3 font-semibold">Worker</th>
                 <th className="px-3 py-3 font-semibold">Verification</th>
                 <th className="px-3 py-3 font-semibold">Compute</th>
                 <th className="px-3 py-3 font-semibold">Updated</th>
@@ -37,6 +38,9 @@ export function MissionHistoryTable({ missions }: { missions: MissionHistoryRow[
                   <td className="px-3 py-4"><StatusBadge value={mission.status} /></td>
                   <td className="px-3 py-4"><StatusBadge value={mission.mode} /></td>
                   <td className="px-3 py-4"><StatusBadge value={mission.currentStage} /></td>
+                  <td className="px-3 py-4 text-sm leading-6 text-[var(--muted-foreground)]">
+                    {mission.workerId ?? "Awaiting worker"}
+                  </td>
                   <td className="px-3 py-4">
                     <StatusBadge value={mission.verificationReport?.qaDecision ?? "pending"} />
                   </td>

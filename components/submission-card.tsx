@@ -34,12 +34,36 @@ export function SubmissionCard({ submission }: { submission: Submission | null |
             <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{submission.commitMessage ?? "No commit created in dry-run mode."}</div>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Commit Hash</div>
+            <div className="mt-2 break-all text-sm font-medium text-[var(--foreground)]">
+              {submission.commitHash ?? "No local commit was created for this mission."}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Execution Adapter</div>
+            <div className="mt-2 text-sm font-medium text-[var(--foreground)]">
+              {submission.executionAdapterId ?? "No deterministic execution adapter was recorded."}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Task Category</div>
+            <div className="mt-2 text-sm font-medium text-[var(--foreground)]">
+              {submission.taskCategory ?? "Unclassified"}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">PR Title</div>
             <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{submission.prTitle}</div>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Last Updated</div>
             <div className="mt-2 text-sm font-medium text-[var(--foreground)]">{formatDate(submission.updatedAt)}</div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Submitted At</div>
+            <div className="mt-2 text-sm font-medium text-[var(--foreground)]">
+              {submission.submittedAt ? formatDate(submission.submittedAt) : "No live GitHub submission has been published."}
+            </div>
           </div>
         </div>
 
@@ -52,6 +76,18 @@ export function SubmissionCard({ submission }: { submission: Submission | null |
             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Changed Files</div>
             <div className="mt-2 text-sm leading-6 text-[var(--foreground)]">
               {changedFiles.length > 0 ? changedFiles.join(", ") : "No repository changes were persisted in the current mission mode."}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">PR URL</div>
+            <div className="mt-2 text-sm leading-6 text-[var(--foreground)]">
+              {submission.prUrl ? (
+                <a href={submission.prUrl} target="_blank" rel="noreferrer" className="text-[var(--primary)] hover:underline">
+                  {submission.prUrl}
+                </a>
+              ) : (
+                "No live pull request has been created for this mission."
+              )}
             </div>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">

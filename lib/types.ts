@@ -3,6 +3,7 @@ import type { CandidateStatus, CheckStatus, MissionMode, MissionStage, MissionSt
 export type DiscoveryCandidate = {
   repo: string;
   repoUrl: string;
+  cloneUrl?: string;
   issueNumber: number;
   issueTitle: string;
   issueUrl: string;
@@ -55,6 +56,11 @@ export type WorkspacePreparation = {
   repositoryPath: string | null;
   cloneSucceeded: boolean;
   repoUrl: string;
+  cloneUrl: string;
+  branchName: string | null;
+  defaultBranch: string | null;
+  appliedAdapterId: string | null;
+  appliedTaskCategory: string | null;
   availableScripts: {
     build?: string;
     lint?: string;
@@ -66,6 +72,7 @@ export type WorkspacePreparation = {
 };
 
 export type VerificationResult = {
+  installStatus: CheckStatus;
   buildStatus: CheckStatus;
   lintStatus: CheckStatus;
   testStatus: CheckStatus;
@@ -79,6 +86,8 @@ export type SubmissionArtifact = {
   branchName: string;
   commitHash: string | null;
   commitMessage: string;
+  executionAdapterId: string | null;
+  taskCategory: string | null;
   prTitle: string;
   prBody: string;
   prUrl: string | null;
@@ -127,7 +136,10 @@ export type AgentManifest = {
   agent_name: string;
   description: string;
   operator_wallet: string;
+  network: string;
   identity_reference: string;
+  registration_tx_hash: string | null;
+  manifest_uri: string | null;
   supported_tools: string[];
   supported_task_categories: string[];
   compute_budget: {
@@ -144,5 +156,6 @@ export type AgentManifest = {
     approval_requires_passing_checks: boolean;
   };
   execution_modes: string[];
+  proof_format_version: string;
   version: string;
 };

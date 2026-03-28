@@ -14,6 +14,7 @@ const config = [
     ignores: [
       ".next/**",
       "node_modules/**",
+      "artifacts/workspaces/**",
       "next-env.d.ts"
     ]
   }

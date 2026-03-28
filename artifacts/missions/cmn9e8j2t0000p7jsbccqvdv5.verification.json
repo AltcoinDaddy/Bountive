@@ -1,0 +1,10 @@
+{
+  "installStatus": "PASSED",
+  "buildStatus": "PASSED",
+  "lintStatus": "PASSED",
+  "testStatus": "FAILED",
+  "criteriaMet": false,
+  "qaDecision": "RETRY_REQUIRED",
+  "qaNotes": "Dependencies installed successfully in guarded mode with lifecycle scripts disabled. build passed lint passed test failed: file:///Users/daddy/Desktop/Bountive/artifacts/workspaces/cmn9e8j2t0000p7jsbccqvdv5/attempt-2/repo/scripts/test-check.js:16",
+  "summary": "install=passed, build=passed, lint=passed, test=failed"
+}

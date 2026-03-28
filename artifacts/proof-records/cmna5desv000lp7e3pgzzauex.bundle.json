@@ -1,0 +1,47 @@
+{
+  "proof_format": "bountive-proof/v1",
+  "proof_id": "cmna5desv000lp7e3pgzzauex",
+  "created_at": "2026-03-28T09:48:09.391Z",
+  "identity": {
+    "agent_name": "Bountive Operator",
+    "operator_wallet": "0x0000000000000000000000000000000000000000",
+    "network": "base-sepolia",
+    "identity_reference": "bountive-operator-dev",
+    "registration_tx_hash": null,
+    "manifest_uri": "artifacts/generated/agent.json"
+  },
+  "mission": {
+    "mission_id": "cmna5cy6i0000p7wywg76d085",
+    "title": "Autonomous issue mission",
+    "mode": "DRY_RUN",
+    "status": "COMPLETED",
+    "selected_issue_url": "https://github.com/bountive-fixtures/demo-task-repo/issues/1",
+    "selected_repo": "bountive-fixtures/demo-task-repo"
+  },
+  "submission": {
+    "branch_name": "bountive/clarify-docs-for-the-image-remote-pattern-warnin",
+    "commit_hash": "e1fb60280c9aace994e1b799c57835cb36e5a431",
+    "pr_url": null,
+    "submission_status": "DRAFT_READY"
+  },
+  "verification": {
+    "install_status": "PASSED",
+    "build_status": "PASSED",
+    "lint_status": "PASSED",
+    "test_status": "PASSED",
+    "criteria_met": true,
+    "qa_decision": "APPROVED",
+    "qa_notes": "Dependencies installed successfully in guarded mode with lifecycle scripts disabled. build passed lint passed test passed"
+  },
+  "proofs": {
+    "verification_hash": "0x9118cbf8a4fb506117e7afec245b2fba79be98e2609a812cd3a159af7224f043",
+    "log_hash": "0x63cb6931ad69dfbae8636b67afc303aae1da3a83e74f051a8e2cdf2b2fb3c46d"
+  },
+  "references": {
+    "proof_record_artifact": "artifacts/proof-records/cmna5desv000lp7e3pgzzauex.json",
+    "mission_summary_artifact": "artifacts/missions/cmna5cy6i0000p7wywg76d085.summary.json",
+    "verification_artifact": "artifacts/missions/cmna5cy6i0000p7wywg76d085.verification.json",
+    "submission_artifact": "artifacts/missions/cmna5cy6i0000p7wywg76d085.submission.json",
+    "agent_manifest_artifact": "artifacts/generated/agent.json"
+  }
+}

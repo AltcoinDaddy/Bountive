@@ -2,8 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { runMission } from "@/lib/orchestrator";
+import { abortMission, recoverStaleRunningMissions } from "@/lib/mission-queue";
+import { enqueueMission, processNextQueuedMission } from "@/lib/orchestrator";
+import { requireOperatorSession, setOperatorSession } from "@/lib/auth";
+import { assertLiveMissionConfigured } from "@/lib/live-submission-readiness";
 import type { MissionInput } from "@/lib/types";
+import { updateDefaultWorkspacePolicy } from "@/lib/workspace-manager";
 
 function readBoolean(value: FormDataEntryValue | null) {
   return value === "on";
@@ -14,7 +18,18 @@ function readNumber(value: FormDataEntryValue | null, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function revalidateMissionSurfaces() {
+  revalidatePath("/dashboard");
+  revalidatePath("/missions");
+  revalidatePath("/tasks");
+  revalidatePath("/timeline");
+  revalidatePath("/logs");
+  revalidatePath("/identity");
+  revalidatePath("/submission");
+}
+
 export async function launchMissionAction(formData: FormData) {
+  const session = await requireOperatorSession("/missions");
   const payload: MissionInput = {
     title: String(formData.get("title") ?? "Autonomous issue mission"),
     mode: formData.get("mode") === "live" ? "live" : "dry_run",
@@ -35,15 +50,81 @@ export async function launchMissionAction(formData: FormData) {
     maxCandidates: 12
   };
 
-  const missionId = await runMission(payload);
+  try {
+    assertLiveMissionConfigured({
+      mode: payload.mode,
+      liveSubmissionEnabled: payload.liveSubmissionEnabled,
+      allowlistedRepos: payload.allowlistedRepos
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Mission launch blocked by live-mode guardrails.";
+    redirect(`/missions?launchError=${encodeURIComponent(message)}`);
+  }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/missions");
-  revalidatePath("/tasks");
-  revalidatePath("/timeline");
-  revalidatePath("/logs");
-  revalidatePath("/identity");
-  revalidatePath("/submission");
+  if (session.operatorEmail) {
+    await setOperatorSession(session.operatorEmail);
+  }
 
+  const missionId = await enqueueMission(payload);
+
+  revalidateMissionSurfaces();
+
+  redirect(`/missions?missionId=${missionId}`);
+}
+
+export async function updateWorkspacePolicyAction(formData: FormData) {
+  const session = await requireOperatorSession("/missions");
+  const operatorEmail = String(formData.get("operatorEmail") ?? session.operatorEmail ?? "").trim().toLowerCase();
+  const allowedTaskCategories = String(formData.get("allowedTaskCategories") ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  const maxPatchFiles = Math.max(1, readNumber(formData.get("maxPatchFiles"), 8));
+
+  if (!operatorEmail) {
+    redirect("/missions?policyError=Operator%20email%20is%20required.");
+  }
+
+  await updateDefaultWorkspacePolicy({
+    operatorEmail,
+    requireHumanApprovalForLive: readBoolean(formData.get("requireHumanApprovalForLive")),
+    allowAutoApproveDryRun: readBoolean(formData.get("allowAutoApproveDryRun")),
+    allowApproveFailedChecks: readBoolean(formData.get("allowApproveFailedChecks")),
+    maxPatchFiles,
+    allowedTaskCategories
+  });
+  await setOperatorSession(operatorEmail);
+
+  revalidateMissionSurfaces();
+  redirect("/missions?policyUpdated=1");
+}
+
+export async function processQueuedMissionAction() {
+  const missionId = await processNextQueuedMission("manual-operator");
+
+  revalidateMissionSurfaces();
+
+  if (missionId) {
+    redirect(`/missions?missionId=${missionId}`);
+  }
+
+  redirect("/missions");
+}
+
+export async function recoverStaleMissionsAction() {
+  await recoverStaleRunningMissions();
+  revalidateMissionSurfaces();
+  redirect("/missions");
+}
+
+export async function abortMissionAction(formData: FormData) {
+  const missionId = String(formData.get("missionId") ?? "");
+
+  if (!missionId) {
+    redirect("/missions");
+  }
+
+  await abortMission(missionId);
+  revalidateMissionSurfaces();
   redirect(`/missions?missionId=${missionId}`);
 }

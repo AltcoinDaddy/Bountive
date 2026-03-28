@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { ProtectedAppLayout } from "@/components/protected-app-layout";
 
-export default function MissionsLayout({
+export default async function MissionsLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  return <ProtectedAppLayout nextPath="/missions">{children}</ProtectedAppLayout>;
 }

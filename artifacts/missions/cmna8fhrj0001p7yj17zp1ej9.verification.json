@@ -1,0 +1,10 @@
+{
+  "installStatus": "SKIPPED",
+  "buildStatus": "SKIPPED",
+  "lintStatus": "SKIPPED",
+  "testStatus": "SKIPPED",
+  "criteriaMet": true,
+  "qaDecision": "APPROVED",
+  "qaNotes": "Dependency installation skipped because the repository does not define a package.json. build skipped because the script is not defined. lint skipped because the script is not defined. test skipped because the script is not defined.",
+  "summary": "install=skipped, build=skipped, lint=skipped, test=skipped"
+}

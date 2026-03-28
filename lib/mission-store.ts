@@ -1,15 +1,28 @@
 import { MissionMode, MissionStage, MissionStatus, SubmissionStatus, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { appendGeneratedAgentLog, writeArtifact } from "@/lib/artifacts";
+import { env } from "@/lib/env";
 import { safeJsonParse } from "@/lib/utils";
 import type { MissionInput } from "@/lib/types";
+import { ensureDefaultWorkspace } from "@/lib/workspace-manager";
 
-export async function createMission(input: MissionInput, guardrailsJson: string) {
+export async function createMission(
+  input: MissionInput,
+  guardrailsJson: string,
+  options?: {
+    queued?: boolean;
+    workerId?: string | null;
+  }
+) {
+  const queued = options?.queued ?? false;
+  const workspace = await ensureDefaultWorkspace();
+
   return prisma.mission.create({
     data: {
+      workspaceId: workspace.id,
       title: input.title,
       mode: input.mode === "live" ? MissionMode.LIVE : MissionMode.DRY_RUN,
-      status: MissionStatus.RUNNING,
+      status: queued ? MissionStatus.QUEUED : MissionStatus.RUNNING,
       currentStage: MissionStage.DISCOVER,
       retriesUsed: 0,
       modelCallsUsed: 0,
@@ -21,7 +34,12 @@ export async function createMission(input: MissionInput, guardrailsJson: string)
       allowApproveOnFailure: input.allowApproveOnFailure,
       maxRetries: input.retries,
       guardrailsJson,
-      configJson: JSON.stringify(input)
+      configJson: JSON.stringify(input),
+      queuedAt: new Date(),
+      startedAt: queued ? null : new Date(),
+      workerId: queued ? null : options?.workerId ?? null,
+      lastHeartbeatAt: queued ? null : new Date(),
+      failureReason: null
     }
   });
 }
@@ -105,8 +123,16 @@ export async function getMissionSummary(missionId: string) {
   });
 }
 
+export async function getMissionById(missionId: string) {
+  return prisma.mission.findUnique({
+    where: {
+      id: missionId
+    }
+  });
+}
+
 export async function getDashboardData() {
-  const [missions, identity, latestSubmission, proofs, latestMission] = await Promise.all([
+  const [missions, identity, latestSubmission, proofs, latestMission, queuedMissionCount, runningMissionCount, workspace] = await Promise.all([
     prisma.mission.findMany({
       orderBy: { updatedAt: "desc" },
       take: 6,
@@ -138,6 +164,21 @@ export async function getDashboardData() {
           take: 8
         }
       }
+    }),
+    prisma.mission.count({
+      where: {
+        status: MissionStatus.QUEUED
+      }
+    }),
+    prisma.mission.count({
+      where: {
+        status: MissionStatus.RUNNING
+      }
+    }),
+    prisma.workspace.findFirst({
+      include: {
+        approvalPolicy: true
+      }
     })
   ]);
 
@@ -163,6 +204,11 @@ export async function getDashboardData() {
     latestSubmission,
     proofs,
     latestMission,
+    workspace,
+    queue: {
+      queuedMissionCount,
+      runningMissionCount
+    },
     totals
   };
 }
@@ -205,19 +251,27 @@ export async function getLogData() {
 }
 
 export async function getIdentityData() {
-  const [identity, proofs] = await Promise.all([
+  const [identity, proofs, latestMission] = await Promise.all([
     prisma.identityRecord.findFirst({
       orderBy: { createdAt: "desc" }
     }),
     prisma.proofRecord.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        mission: true
+        mission: true,
+        identityRecord: true
       }
+    }),
+    prisma.mission.findFirst({
+      orderBy: { updatedAt: "desc" }
     })
   ]);
 
-  return { identity, proofs };
+  return {
+    identity,
+    proofs,
+    currentMode: latestMission?.mode ?? (env.defaultMissionMode === "live" ? MissionMode.LIVE : MissionMode.DRY_RUN)
+  };
 }
 
 export async function getSubmissionData() {

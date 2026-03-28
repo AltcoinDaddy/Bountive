@@ -1,0 +1,12 @@
+{
+  "id": "cmn9e8n7b0016p7jsdyoxstpy",
+  "missionId": "cmn9e8j2t0000p7jsbccqvdv5",
+  "identityRecordId": "cmn95crz50000p7216ijzam0t",
+  "issueUrl": "https://github.com/bountive-fixtures/demo-task-repo/issues/1",
+  "repoUrl": "https://github.com/bountive-fixtures/demo-task-repo",
+  "commitHash": "5e463432e1abb9a0fd3df521266de1686d7383bb",
+  "prUrl": null,
+  "verificationHash": "0x59f6d8f89c85f89c62c87f810bb7affec9155e2c7cbf42c923dd960c3857a722",
+  "logHash": "0xf98bea9e512d8cb7c5daf2a3e2aa31c0f39d4b6960c6c23a188e2d185157b15d",
+  "createdAt": "2026-03-27T21:08:37.367Z"
+}

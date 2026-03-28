@@ -3,19 +3,32 @@ import { env } from "@/lib/env";
 import { mockIssues } from "@/lib/github/mock-issues";
 import type { DiscoveryCandidate } from "@/lib/types";
 
-function createOctokit() {
+export function createOctokit() {
   return new Octokit({
     auth: env.githubToken || undefined
   });
 }
 
-export async function discoverGithubIssues(labels: string[], maxCandidates: number): Promise<DiscoveryCandidate[]> {
+export async function discoverGithubIssues(labels: string[], maxCandidates: number, repoAllowlist?: string[]): Promise<DiscoveryCandidate[]> {
   if (!env.githubToken) {
-    return mockIssues.slice(0, maxCandidates);
+    const normalizedLabels = labels.map((label) => label.toLowerCase());
+    const normalizedAllowlist = repoAllowlist?.map((repo) => repo.toLowerCase()) ?? [];
+
+    return mockIssues
+      .filter((issue) =>
+        normalizedLabels.length === 0 ||
+        issue.labels.some((label) => normalizedLabels.includes(label.toLowerCase()))
+      )
+      .filter((issue) => normalizedAllowlist.length === 0 || normalizedAllowlist.includes(issue.repo.toLowerCase()))
+      .slice(0, maxCandidates);
   }
 
   const octokit = createOctokit();
-  const query = `${labels.map((label) => `label:"${label}"`).join(" OR ")} state:open archived:false no:assignee`;
+  const repoQuery = repoAllowlist?.length
+    ? `(${repoAllowlist.map((repo) => `repo:${repo}`).join(" OR ")})`
+    : "";
+  const labelQuery = labels.map((label) => `label:"${label}"`).join(" OR ");
+  const query = [repoQuery, labelQuery, "state:open archived:false no:assignee"].filter(Boolean).join(" ");
 
   const result = await octokit.search.issuesAndPullRequests({
     q: query,
@@ -52,5 +65,7 @@ export async function discoverGithubIssues(labels: string[], maxCandidates: numb
       })
   );
 
-  return candidates;
+  return repoAllowlist?.length
+    ? candidates.filter((candidate) => repoAllowlist.includes(candidate.repo))
+    : candidates;
 }

@@ -1,0 +1,28 @@
+{
+  "missionId": "cmn9e8j2t0000p7jsbccqvdv5",
+  "reason": "Submission blocked by guardrails or missing code changes.",
+  "verification": {
+    "installStatus": "PASSED",
+    "buildStatus": "PASSED",
+    "lintStatus": "PASSED",
+    "testStatus": "FAILED",
+    "criteriaMet": false,
+    "qaDecision": "RETRY_REQUIRED",
+    "qaNotes": "Dependencies installed successfully in guarded mode with lifecycle scripts disabled. build passed lint passed test failed: file:///Users/daddy/Desktop/Bountive/artifacts/workspaces/cmn9e8j2t0000p7jsbccqvdv5/attempt-2/repo/scripts/test-check.js:16",
+    "summary": "install=passed, build=passed, lint=passed, test=failed"
+  },
+  "submission": {
+    "branchName": "bountive/clarify-docs-for-the-image-remote-pattern-warnin",
+    "commitHash": "5e463432e1abb9a0fd3df521266de1686d7383bb",
+    "commitMessage": "docs: clarify docs for the image remote pattern warning",
+    "prTitle": "docs: clarify docs for the image remote pattern warning",
+    "prBody": "## Summary\n- prepare a safe autonomous mission draft from the selected issue\n- keep live submission disabled unless explicitly enabled and allowlisted\n- attach verification outcomes and operator proof metadata\n\n## Verification\nbuild: passed\nlint: passed\ntest: failed\n\n## Notes\n- Workspace prepared successfully.\n- Created isolated branch bountive/clarify-docs-for-the-image-remote-pattern-warnin.\n- Developer execution remains strategy-driven and only mutates repositories when a deterministic patch rule matches the selected task.\n- Applied deterministic documentation patch for the local fixture repository.\n## Submission status\n- blocked because verification did not satisfy the configured policy",
+    "prUrl": null,
+    "submissionStatus": "BLOCKED",
+    "changedFiles": [
+      "docs/remote-pattern-warning.md",
+      "package-lock.json"
+    ],
+    "verificationSummary": "install=passed, build=passed, lint=passed, test=failed"
+  }
+}

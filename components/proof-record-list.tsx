@@ -1,4 +1,4 @@
-import type { ProofRecord } from "@prisma/client";
+import type { IdentityRecord, ProofRecord } from "@prisma/client";
 import { SectionHeading } from "@/components/section-heading";
 import { SurfaceCard } from "@/components/surface-card";
 import { formatDate } from "@/lib/utils";
@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 export function ProofRecordList({
   proofs
 }: {
-  proofs: Array<ProofRecord & { mission?: { title: string } | null }>;
+  proofs: Array<ProofRecord & { mission?: { title: string } | null; identityRecord?: IdentityRecord | null }>;
 }) {
   return (
     <SurfaceCard>
@@ -30,6 +30,36 @@ export function ProofRecordList({
                 <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
                   <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Log Hash</div>
                   <div className="mt-2 break-all">{proof.logHash}</div>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Identity Reference</div>
+                  <div className="mt-2 break-all">{proof.identityRecord?.identityReference ?? "Unavailable"}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Proof Bundle</div>
+                  <div className="mt-2 break-all">{`artifacts/proof-records/${proof.id}.bundle.json`}</div>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Signature Artifact</div>
+                  <div className="mt-2 break-all">{`artifacts/proof-records/${proof.id}.signature.json`}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Onchain Artifact</div>
+                  <div className="mt-2 break-all">{`artifacts/proof-records/${proof.id}.onchain.json`}</div>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Commit Hash</div>
+                  <div className="mt-2 break-all">{proof.commitHash ?? "No commit recorded."}</div>
+                </div>
+                <div className="rounded-2xl border border-[var(--border)] bg-white p-3 text-xs leading-6 text-[var(--foreground)]">
+                  <div className="font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Pull Request URL</div>
+                  <div className="mt-2 break-all">{proof.prUrl ?? "No live pull request recorded."}</div>
                 </div>
               </div>
             </div>

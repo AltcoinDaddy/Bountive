@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { ProtectedAppLayout } from "@/components/protected-app-layout";
 
-export default function TimelineLayout({
+export default async function TimelineLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  return <ProtectedAppLayout nextPath="/timeline">{children}</ProtectedAppLayout>;
 }

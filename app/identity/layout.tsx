@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { ProtectedAppLayout } from "@/components/protected-app-layout";
 
-export default function IdentityLayout({
+export default async function IdentityLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  return <ProtectedAppLayout nextPath="/identity">{children}</ProtectedAppLayout>;
 }
