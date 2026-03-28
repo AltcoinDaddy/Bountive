@@ -1,7 +1,10 @@
 import process from "node:process";
+import { existsSync } from "node:fs";
 import { defineConfig, env } from "prisma/config";
 
-process.loadEnvFile?.(".env");
+if (existsSync(".env")) {
+  process.loadEnvFile?.(".env");
+}
 
 const databaseProvider = process.env.DATABASE_PROVIDER === "postgresql" ? "postgresql" : "sqlite";
 
