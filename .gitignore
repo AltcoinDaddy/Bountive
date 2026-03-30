@@ -13,12 +13,19 @@
 .env.production.local
 
 # prisma
+/dev.db
 /prisma/dev.db
 /prisma/dev.db-journal
 
 # logs and artifacts
+/artifacts/missions/*
+/artifacts/proof-records/*
+!/artifacts/missions/.gitkeep
+!/artifacts/proof-records/.gitkeep
 /artifacts/workspaces
 /artifacts/runtime
+/artifacts/generated/demo
+/artifacts/generated/bountive-demo.mp4
 
 # misc
 .DS_Store
