@@ -1,8 +1,8 @@
 # Bountive
 
-Bountive is a production-style MVP for an autonomous GitHub-first task bounty system. It discovers real GitHub issues, selects a safe task, prepares an isolated execution workspace, applies a bounded fix strategy, verifies the result, and prepares submission artifacts with minimal human intervention.
+Bountive is an autonomous software operations platform for GitHub-based work. It helps an operator discover real issues, evaluate which tasks are safe to attempt, run a controlled execution flow in an isolated workspace, verify the outcome, and prepare a submission package with logs and proof-linked metadata.
 
-The product is designed as a serious operations console, not a toy demo. The current implementation prioritizes one reliable, auditable mission flow end to end:
+It is built as a serious control plane for software task execution, with one core lifecycle at the center:
 
 `discover -> plan -> execute -> verify -> submit`
 
