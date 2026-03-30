@@ -1,30 +1,52 @@
 # Bountive
 
-Bountive is a production-style MVP for an autonomous GitHub-first task bounty system. It discovers candidate issues, scores and selects one task, prepares an isolated execution workspace, applies a bounded execution strategy, verifies repository checks, drafts a submission artifact, and writes mission logs plus identity-linked proof metadata with minimal human intervention.
+Bountive is a production-style MVP for an autonomous GitHub-first task bounty system. It discovers real GitHub issues, selects a safe task, prepares an isolated execution workspace, applies a bounded fix strategy, verifies the result, and prepares submission artifacts with minimal human intervention.
 
-The product is built as a serious SaaS-style operations console rather than a demo landing page. The current implementation prioritizes one reliable, auditable mission flow end to end:
+The product is designed as a serious operations console, not a toy demo. The current implementation prioritizes one reliable, auditable mission flow end to end:
 
 `discover -> plan -> execute -> verify -> submit`
 
-## What It Includes
+## What Bountive Does
+
+- discovers GitHub issues using configured labels and repo constraints
+- scores candidates for clarity, complexity, and buildability
+- selects one task within safety and compute limits
+- clones the target repository into an isolated workspace
+- applies a bounded execution strategy when a supported task matches
+- runs verification checks before preparing a submission
+- records logs, artifacts, and proof-linked metadata for auditability
+
+## Why This Project Matters
+
+Most autonomous coding demos stop at “generate a patch.” Bountive is built around the harder operational layer:
+
+- mission selection
+- safety guardrails
+- compute budgets
+- verification
+- submission readiness
+- operator visibility
+
+That makes it closer to a real product for controlled autonomous software work, not just a single-shot code generation experiment.
+
+## What’s Implemented Today
 
 - Next.js App Router application with TypeScript and Tailwind
-- SQLite + Prisma data layer
-- Environment-driven SQLite or Postgres Prisma datasource
-- GitHub issue discovery via Octokit with offline fallback fixtures
-- Modular agents:
-  - `Scout Agent`
-  - `Planner Agent`
-  - `Developer Agent`
-  - `QA Agent`
-  - `Submitter Agent`
+- Prisma-backed data layer with SQLite or Postgres runtime support
+- GitHub issue discovery via Octokit
+- modular agent architecture:
+  - Scout Agent
+  - Planner Agent
+  - Developer Agent
+  - QA Agent
+  - Submitter Agent
 - Central orchestrator with safety and compute budgets
-- Queue-first mission launch path with a local worker runner
-- Optional Redis-backed worker wake-up coordination for multi-worker deployments
-- Guarded sandbox runner abstraction for workspace-only command execution
-- Optional Docker sandbox profile for stronger command isolation
+- queue-first mission launch path with worker support
+- guarded sandbox runner abstraction for workspace-only command execution
 - File-based artifacts and structured logs
-- Local operator session management and workspace approval policy editing
+- Better Auth-backed operator access control
+- workspace policy editing and live-mode readiness checks
+- GitHub writable-repo visibility on the Missions page for live-target selection
 - Health and monitoring surfaces plus a `/api/health` endpoint
 - Identity and proof metadata layer using wallet, signed proof hashes, and optional onchain publication
 - Premium light-mode operations dashboard for:
@@ -37,88 +59,36 @@ The product is built as a serious SaaS-style operations console rather than a de
   - Identity
   - Submission
 
-## Architecture Overview
+## Product Surfaces
 
-### Core loop
+- `/` landing page
+- `/dashboard` mission dashboard
+- `/missions` mission launch, worker, policy, and live-readiness controls
+- `/tasks` candidate task scoring and selection reasoning
+- `/timeline` lifecycle event stream
+- `/logs` structured execution logs
+- `/monitoring` runtime health and queue state
+- `/identity` operator session, identity metadata, and proof history
+- `/submission` generated branch, commit, PR, and verification output
 
-1. `queue`
-   Accept mission configuration, persist it, and wait for a worker claim before execution begins.
-2. `discover`
-   Search GitHub issues by configured labels such as `good first issue`, `help wanted`, `bug`, and `documentation`.
-3. `plan`
-   Score candidates for clarity, complexity, and buildability, then reject vague or oversized work.
-4. `execute`
-   Clone the selected repository into an isolated workspace, create an isolated branch, and apply a deterministic patch when a supported execution strategy matches.
-5. `verify`
-   Install dependencies in guarded mode, run `build`, `lint`, and `test` when available, and compute a QA decision.
-6. `submit`
-   Produce branch, commit, and PR draft artifacts, block unshippable missions, and attach proof metadata.
+## How It Works
 
-### Main modules
+1. Queue
+   Mission config is persisted first and claimed by a worker.
+2. Discover
+   Scout Agent finds GitHub issues through Octokit using labels and allowlist constraints.
+3. Plan
+   Planner Agent scores candidates and selects the safest supported task.
+4. Execute
+   Developer Agent clones the repo into an isolated workspace and applies a bounded execution adapter when a supported task matches.
+5. Verify
+   QA Agent runs guarded install/build/lint/test checks and compares post-patch health against the clean baseline.
+6. Submit
+   Submitter Agent prepares branch, commit, PR draft, and proof-linked submission artifacts.
 
-- [app/dashboard/page.tsx](/Users/daddy/Desktop/Bountive/app/dashboard/page.tsx)
-- [app/missions/page.tsx](/Users/daddy/Desktop/Bountive/app/missions/page.tsx)
-- [app/tasks/page.tsx](/Users/daddy/Desktop/Bountive/app/tasks/page.tsx)
-- [app/timeline/page.tsx](/Users/daddy/Desktop/Bountive/app/timeline/page.tsx)
-- [app/logs/page.tsx](/Users/daddy/Desktop/Bountive/app/logs/page.tsx)
-- [app/monitoring/page.tsx](/Users/daddy/Desktop/Bountive/app/monitoring/page.tsx)
-- [app/identity/page.tsx](/Users/daddy/Desktop/Bountive/app/identity/page.tsx)
-- [app/submission/page.tsx](/Users/daddy/Desktop/Bountive/app/submission/page.tsx)
-- [lib/orchestrator.ts](/Users/daddy/Desktop/Bountive/lib/orchestrator.ts)
-- [lib/safety-engine.ts](/Users/daddy/Desktop/Bountive/lib/safety-engine.ts)
-- [lib/verification-engine.ts](/Users/daddy/Desktop/Bountive/lib/verification-engine.ts)
-- [lib/identity-module.ts](/Users/daddy/Desktop/Bountive/lib/identity-module.ts)
-- [prisma/schema.prisma](/Users/daddy/Desktop/Bountive/prisma/schema.prisma)
-
-More detail is available in [docs/architecture.md](/Users/daddy/Desktop/Bountive/docs/architecture.md).
-
-## How The Agent Loop Works
-
-### Scout Agent
-
-- Queries GitHub issues through Octokit when `GITHUB_TOKEN` is available
-- Falls back to local sample candidates when running offline
-- Returns normalized issue and repository metadata
-
-### Planner Agent
-
-- Scores each candidate for:
-  - clarity
-  - complexity
-  - buildability
-- Rejects oversized or ambiguous tasks
-- Persists explicit reasons for selection and rejection
-
-### Developer Agent
-
-- Creates an isolated workspace per mission
-- Attempts a safe clone of the selected repository
-- Creates an isolated mission branch inside the workspace
-- Detects package manager and available scripts
-- Selects from registered deterministic execution adapters for supported tasks
-- Can use a local guarded sandbox or a Docker-backed sandbox profile, depending on env config
-- Writes an execution plan artifact
-- Avoids destructive shell behavior
-
-### QA Agent
-
-- Runs guarded dependency installation before project scripts
-- Runs build, lint, and test only if those scripts exist
-- Produces a `VerificationReport`
-- Converts check results into `approved`, `retry_required`, or `rejected`
-
-### Submitter Agent
-
-- Generates:
-  - branch name
-  - commit message
-  - local commit hash when a real patch exists
-  - PR title
-  - PR body
-  - submission status
-- Blocks submission when verification fails or no repository changes were produced
-- Keeps the MVP in draft mode unless live mode is explicitly enabled
-- Can publish a real GitHub draft PR when live mode is enabled, the repo is allowlisted, and `GITHUB_TOKEN` has write access
+Architecture details:
+- [docs/architecture.md](/Users/daddy/Desktop/Bountive/docs/architecture.md)
+- [docs/production-checklist.md](/Users/daddy/Desktop/Bountive/docs/production-checklist.md)
 
 ## Safety Model
 
@@ -139,6 +109,18 @@ Bountive includes real guardrails:
 
 The active guardrails are stored per mission and surfaced in the UI.
 
+## Verification Model
+
+Bountive does not treat “generated a patch” as success.
+
+It verifies missions by:
+
+- capturing a baseline repo health snapshot before mutation
+- running guarded dependency install when needed
+- running build, lint, and test when scripts exist
+- comparing post-patch results against the baseline
+- blocking submission when checks regress or no meaningful diff exists
+
 ## Compute Budget Model
 
 The orchestrator tracks and enforces:
@@ -155,9 +137,9 @@ If a configured budget is exceeded, the mission is halted and an error artifact 
 
 ## Identity / Proof Layer
 
-Blockchain is intentionally not used as the execution engine.
+Blockchain is intentionally not used as the execution engine. In Bountive, the identity layer is metadata-first.
 
-The MVP identity layer covers:
+It covers:
 
 - operator wallet
 - network
@@ -166,39 +148,7 @@ The MVP identity layer covers:
 - manifest URI
 - proof record history
 
-Generated machine-readable files include:
-
-- `artifacts/generated/agent.json`
-- `artifacts/generated/agent_log.json`
-- `artifacts/missions/<mission-id>.summary.json`
-- `artifacts/proof-records/<proof-id>.json`
-- `artifacts/proof-records/<proof-id>.bundle.json`
-
-The capability manifest now includes network, registration metadata, manifest URI, and proof format version. Proof records store mission, repository, verification, and log hashes, while proof bundles package those hashes with mission, submission, and identity context for future onchain registration or attestations.
-
-Signed proof flow additions:
-
-- `artifacts/proof-records/<proof-id>.signature.json`
-- `artifacts/proof-records/<proof-id>.onchain.json`
-
-When `BOUNTIVE_PROOF_SIGNING_KEY` is configured, proof hashes are signed automatically. When `ENABLE_PROOF_PUBLISHING`, `BOUNTIVE_CHAIN_RPC_URL`, and `BOUNTIVE_PROOF_REGISTRY_ADDRESS` are all configured, Bountive can also attempt guarded onchain proof publication through the configured registry contract.
-
-## Generated Artifacts
-
-After seeding or running a mission, you will see files under:
-
-- [artifacts/generated/agent.json](/Users/daddy/Desktop/Bountive/artifacts/generated/agent.json)
-- [artifacts/generated/agent_log.json](/Users/daddy/Desktop/Bountive/artifacts/generated/agent_log.json)
-- [artifacts/missions](/Users/daddy/Desktop/Bountive/artifacts/missions)
-- [artifacts/proof-records](/Users/daddy/Desktop/Bountive/artifacts/proof-records)
-
-Mission workspaces are created under:
-
-- `artifacts/workspaces/<mission-id>`
-
-Offline fixture repositories live under:
-
-- [fixtures/demo-task-repo](/Users/daddy/Desktop/Bountive/fixtures/demo-task-repo)
+The repo generates machine-readable manifests, mission summaries, verification artifacts, submission artifacts, and proof records under `artifacts/`.
 
 ## Local Setup
 
@@ -217,7 +167,7 @@ npm install
 
 Copy `.env.example` to `.env` or use the included local `.env` defaults.
 
-Required and important variables:
+Most important variables:
 
 - `DATABASE_URL`
 - `DATABASE_PROVIDER`
@@ -225,6 +175,9 @@ Required and important variables:
 - `ALLOWLISTED_REPOS`
 - `REDIS_URL`
 - `AUTH_MODE`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `BETTER_AUTH_TRUSTED_ORIGINS`
 - `SANDBOX_PROFILE`
 - `DOCKER_SANDBOX_IMAGE`
 - `SANDBOX_MEMORY_MB`
@@ -306,7 +259,7 @@ npm run mission:recover
 
 Set `MISSION_WORKER_CONCURRENCY` above `1` when you want a single worker process to claim multiple missions in parallel. If `REDIS_URL` is configured, workers also receive queue wake-up signals instead of relying only on polling.
 
-### Production Compose Stack
+### Optional Production-Like Local Stack
 
 This repo now includes [docker-compose.yml](/Users/daddy/Desktop/Bountive/docker-compose.yml) with:
 
@@ -324,47 +277,38 @@ npm run lint
 npm run build
 ```
 
-### Run A Sample Mission
+### Run A Real Mission Script
+
+Use one of the bounded real-data runners:
 
 ```bash
-npm run mission:sample
+npm run mission:real-dx
 ```
 
-This executes the default dry-run mission against the local deterministic fixture repository and verifies the full loop end to end.
+or:
 
-Current registered offline adapters include:
+```bash
+npm run mission:real-commitlint
+```
 
-- documentation warning-copy repair
-- CLI missing-config message repair
-- mission configuration defaults repair
-- verification summary test-fixture repair
+Current registered adapters include:
+
 - structured text replacement from issue-defined contracts
 - structured JSON path patching from issue-defined contracts
-
-Additional local mission runners:
-
-- `npm run mission:enqueue-sample`
-- `npm run mission:config`
-- `npm run mission:structured`
-- `npm run mission:structured-json`
-- `npm run mission:test`
+- VS Code Rust Analyzer workspace settings repair
+- conventional commitlint setup for bounded JavaScript and TypeScript repository configuration tasks
 
 ## GitHub Integration
 
-For real issue discovery, set `GITHUB_TOKEN`.
+Set `GITHUB_TOKEN` for real issue discovery.
 
 For real live draft PR submission, `GITHUB_TOKEN` must also have permission to create branches, commits, and pull requests on the selected allowlisted repository.
 
 Live submissions are also gated by `ENABLE_LIVE_SUBMISSIONS`; if that flag is off, Bountive will keep missions in draft-only mode even when a launch request asks for live submission.
 
-Without a token:
+Set `ALLOWLISTED_REPOS` only to repositories you control and can safely use as live-mode sandboxes. The repo no longer ships with public-repository defaults for this setting.
 
-- the UI still works
-- missions still run
-- issue discovery falls back to local sample candidates
-- the top offline candidate targets a local repository that can be cloned, patched, verified, and committed entirely offline
-
-This makes the MVP easy to run locally while preserving a real GitHub integration path.
+Without a token, the UI can still render, but mission discovery and execution will not proceed because Bountive is now real-data-only.
 
 Live-mode launches are also validated earlier now:
 
@@ -379,7 +323,7 @@ Dry-run mode is the default and recommended local mode.
 In dry-run mode Bountive will:
 
 - queue missions for worker pickup when launched from the app
-- discover and score real or fallback issues
+- discover and score real GitHub issues
 - select one issue
 - prepare an isolated workspace
 - create an isolated branch
@@ -393,11 +337,12 @@ It will not create a live pull request unless live mode is explicitly enabled an
 
 ## Auth, Workspaces, And Policies
 
-Bountive now includes a local operator session flow:
+Bountive now includes Better Auth as the primary operator authentication system:
 
 - protected app routes redirect to `/auth/sign-in` when there is no active operator session
-- the operator session can come from a cookie-backed local sign-in or the configured fallback operator email
-- the Identity page exposes session source and lets operators clear the local session
+- Better Auth email/password sessions are persisted through Prisma-backed auth tables
+- local cookie fallback remains available only when `AUTH_MODE=local`
+- the Identity page exposes session source and lets operators sign out cleanly
 
 Workspace policy is now persisted and editable from the Missions page, including:
 
@@ -428,6 +373,17 @@ Bountive now includes:
 - queue depth and recent event visibility
 - a machine-readable health endpoint at `/api/health`
 
+## What Works Today
+
+- serious product UI across all core surfaces
+- Better Auth operator access control
+- real GitHub discovery
+- queue-first mission lifecycle with worker support
+- bounded real repository mutation for supported task classes
+- baseline-aware verification
+- draft submission artifacts
+- identity and proof metadata generation
+
 ## Current MVP Gaps
 
 - The Developer Agent is intentionally conservative and does not yet perform generalized autonomous code modification across arbitrary repositories.
@@ -435,7 +391,7 @@ Bountive now includes:
 - The worker model now includes a queue-first lifecycle, lease-based stale-run detection, and operator abort controls, but it is not yet backed by a distributed durable queue service with multi-node coordination.
 - The repo now supports Postgres-mode Prisma config, Redis-assisted worker coordination, monitoring surfaces, and Docker-ready sandbox config, but a real hosted rollout still needs managed infrastructure, secrets, and deployment orchestration.
 - GitHub discovery uses a simple search query and can be made smarter with repository quality and buildability profiling.
-- The fully completed autonomous path is deterministic today through bounded adapters and local fixture repos; arbitrary third-party repo editing still needs stronger repo-aware execution strategies.
+- The autonomous path is currently bounded to supported real-repository task classes; arbitrary third-party repo editing still needs stronger repo-aware execution strategies.
 
 ## Future Roadmap
 

@@ -1,15 +1,18 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/lib/env";
+import { auth } from "@/lib/better-auth";
 
 const OPERATOR_SESSION_COOKIE = "bountive_operator_session";
 const SIGNED_OUT_SENTINEL = "__signed_out__";
 
 export type OperatorSession = {
   authMode: string;
+  operatorName: string | null;
   operatorEmail: string | null;
   isAuthenticated: boolean;
-  source: "cookie" | "environment" | "none";
+  userId: string | null;
+  source: "better-auth" | "cookie" | "environment" | "none";
 };
 
 function normalizeEmail(value: string | null | undefined) {
@@ -18,6 +21,32 @@ function normalizeEmail(value: string | null | undefined) {
 }
 
 export async function getOperatorSession(): Promise<OperatorSession> {
+  if (env.authMode === "better-auth") {
+    const session = await auth.api.getSession({
+      headers: await headers()
+    });
+
+    if (session?.user) {
+      return {
+        authMode: "better-auth",
+        operatorName: session.user.name,
+        operatorEmail: normalizeEmail(session.user.email),
+        isAuthenticated: true,
+        userId: session.user.id,
+        source: "better-auth"
+      };
+    }
+
+    return {
+      authMode: "better-auth",
+      operatorName: null,
+      operatorEmail: null,
+      isAuthenticated: false,
+      userId: null,
+      source: "none"
+    };
+  }
+
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get(OPERATOR_SESSION_COOKIE)?.value ?? null;
   const cookieEmail = normalizeEmail(cookieValue);
@@ -25,8 +54,10 @@ export async function getOperatorSession(): Promise<OperatorSession> {
   if (cookieValue === SIGNED_OUT_SENTINEL) {
     return {
       authMode: env.authMode,
+      operatorName: null,
       operatorEmail: null,
       isAuthenticated: false,
+      userId: null,
       source: "none"
     };
   }
@@ -36,8 +67,10 @@ export async function getOperatorSession(): Promise<OperatorSession> {
   if (cookieEmail) {
     return {
       authMode: env.authMode,
+      operatorName: null,
       operatorEmail: cookieEmail,
       isAuthenticated: true,
+      userId: null,
       source: "cookie"
     };
   }
@@ -45,16 +78,20 @@ export async function getOperatorSession(): Promise<OperatorSession> {
   if (envEmail) {
     return {
       authMode: env.authMode,
+      operatorName: null,
       operatorEmail: envEmail,
       isAuthenticated: true,
+      userId: null,
       source: "environment"
     };
   }
 
   return {
     authMode: env.authMode,
+    operatorName: null,
     operatorEmail: null,
     isAuthenticated: false,
+    userId: null,
     source: "none"
   };
 }

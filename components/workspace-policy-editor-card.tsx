@@ -3,6 +3,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SurfaceCard } from "@/components/surface-card";
 
 type WorkspacePolicyEditorCardProps = {
+  authMode: string;
   workspace: {
     operatorEmail: string;
     approvalPolicy: {
@@ -19,6 +20,7 @@ type WorkspacePolicyEditorCardProps = {
 };
 
 export function WorkspacePolicyEditorCard({
+  authMode,
   workspace,
   action,
   errorMessage,
@@ -38,8 +40,14 @@ export function WorkspacePolicyEditorCard({
             name="operatorEmail"
             type="email"
             defaultValue={workspace?.operatorEmail ?? ""}
+            disabled={authMode === "better-auth"}
             className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors focus:border-[var(--primary)]"
           />
+          {authMode === "better-auth" ? (
+            <div className="text-xs leading-5 text-[var(--muted-foreground)]">
+              Operator identity is locked to the authenticated Better Auth session.
+            </div>
+          ) : null}
         </label>
 
         <label className="space-y-2">

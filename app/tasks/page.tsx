@@ -12,7 +12,7 @@ export default async function TasksPage() {
       <PageHeader
         eyebrow="Scouting"
         title="Candidate tasks"
-        description="Review discovered GitHub issues, Bountive scores, confidence thresholds, and the explicit selection or rejection reasoning for each task."
+        description="Review discovered GitHub issues, Bountive scores, execution support, confidence thresholds, and the explicit selection or rejection reasoning for each task."
       />
       <CandidateTaskTable tasks={tasks} />
     </div>

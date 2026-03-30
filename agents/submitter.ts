@@ -26,9 +26,9 @@ export class SubmitterAgent {
       : commitMessage;
 
     const verificationSummary = [
-      `build: ${input.verification.buildStatus.toLowerCase()}`,
-      `lint: ${input.verification.lintStatus.toLowerCase()}`,
-      `test: ${input.verification.testStatus.toLowerCase()}`
+      `baseline: ${input.verification.baselineSummary}`,
+      `post-patch: install=${input.verification.installStatus.toLowerCase()}, build=${input.verification.buildStatus.toLowerCase()}, lint=${input.verification.lintStatus.toLowerCase()}, test=${input.verification.testStatus.toLowerCase()}`,
+      `regression detected: ${input.verification.regressionDetected ? "yes" : "no"}`
     ].join("\n");
 
     const prBody = [

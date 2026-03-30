@@ -8,11 +8,9 @@ Bountive is a GitHub-first autonomous bounty operator built around one reliable 
 
 The MVP keeps the architecture modular even where the implementation remains deliberately conservative. Dry-run mode is the default operating posture, live submissions are disabled unless explicitly enabled, and mission artifacts are written to disk for review and auditability.
 
-The current implementation also includes a deterministic offline mission path through a local fixture repository so the full loop can run end to end without external GitHub access.
-
 ## Runtime Shape
 
-- `app/*`: Next.js App Router pages for operations, missions, tasks, timeline, logs, monitoring, identity, submission, and local auth.
+- `app/*`: Next.js App Router pages for operations, missions, tasks, timeline, logs, monitoring, identity, submission, and operator auth.
 - `components/*`: Premium light-mode dashboard components with reusable cards, tables, and mission controls.
 - `agents/*`: Specialized mission actors for scouting, planning, execution, QA, and submission drafting.
 - `lib/*`: Orchestrator, GitHub client, scoring, safety, verification, identity, workspace, and artifact utilities.
@@ -36,7 +34,7 @@ Outputs:
 
 ### Access and workspace policy
 
-Protected app routes now resolve an operator session before rendering. In local mode, Bountive can use either a cookie-backed operator sign-in or the configured fallback operator email. Workspace policy is persisted separately so approval thresholds and allowed task categories remain stable across mission launches.
+Protected app routes now resolve an operator session before rendering. Better Auth is now the primary path, with Prisma-backed user, session, account, and verification tables behind the `/api/auth/[...all]` route. Local cookie fallback remains available only when `AUTH_MODE=local`. Workspace policy is persisted separately so approval thresholds and allowed task categories remain stable across mission launches.
 
 Outputs:
 
@@ -47,7 +45,7 @@ Outputs:
 
 ### 1. Discover
 
-`ScoutAgent` queries GitHub issues through Octokit using label-driven discovery. When no `GITHUB_TOKEN` is configured, the system falls back to a local discovery fixture so the MVP remains runnable offline. The highest-priority offline candidate points at `fixtures/demo-task-repo`, which is a real local git repository.
+`ScoutAgent` queries GitHub issues through Octokit using label-driven discovery. For allowlisted live missions it now prefers repo-scoped issue listing instead of global search, which reduces GitHub search-rate pressure during targeted runs. Discovery is GitHub-only and requires a valid token so mission execution always reflects real repository data.
 
 Outputs:
 
@@ -63,7 +61,7 @@ Outputs:
 - complexity
 - buildability
 
-It rejects vague or oversized tasks and persists the explicit selection or rejection reason for each candidate.
+It rejects vague or oversized tasks, biases selection toward candidates with registered execution support, and persists the explicit selection or rejection reason for each candidate together with execution support metadata.
 
 Outputs:
 
@@ -102,10 +100,11 @@ Outputs:
 
 ### 4. Verify
 
-`QAAgent` invokes the verification engine, which first performs guarded dependency installation with lifecycle scripts disabled and then runs `build`, `lint`, and `test` only when those scripts exist.
+`QAAgent` now captures a baseline verification snapshot before the repository is mutated, then invokes the verification engine after execution. The engine performs guarded dependency installation with lifecycle scripts disabled and then runs `build`, `lint`, and `test` only when those scripts exist.
 
 The QA decision is computed from:
 
+- baseline versus post-patch check comparison
 - check results
 - current approval policy
 - mission guardrails
@@ -134,12 +133,10 @@ When live mode is enabled and a repository is explicitly allowlisted, the curren
 
 Current deterministic adapter coverage includes:
 
-- documentation copy updates
-- CLI error-message repairs
-- configuration default repairs
-- test-fixture expectation updates
 - structured text replacements defined directly in issue contracts
 - structured JSON path updates defined directly in issue contracts
+- VS Code Rust Analyzer linked-project settings updates
+- conventional commitlint setup for bounded repository configuration tasks
 
 Outputs:
 

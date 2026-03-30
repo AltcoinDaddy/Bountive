@@ -13,7 +13,7 @@ import { createMission, finalizeMissionArtifacts, getMissionById, logMissionEven
 import { ensureIdentityRecord, syncAgentManifest } from "@/lib/identity-module";
 import { prisma } from "@/lib/prisma";
 import { assertBudgets, assertLiveSubmissionAllowed, getGuardrails } from "@/lib/safety-engine";
-import type { DiscoveryCandidate, GuardrailsSnapshot, MissionInput, VerificationResult, WorkspacePreparation } from "@/lib/types";
+import type { DiscoveryCandidate, GuardrailsSnapshot, MissionInput, VerificationResult, VerificationSnapshot, WorkspacePreparation } from "@/lib/types";
 import { createProofRecord } from "@/lib/proof-record-generator";
 
 const scoutAgent = new ScoutAgent();
@@ -54,14 +54,63 @@ async function executeAndVerify(input: {
   let changedFilesCount = 0;
   let workspace: WorkspacePreparation | null = null;
   let verification: VerificationResult | null = null;
+  let baselineVerification: VerificationSnapshot | null = null;
 
   while (retriesUsed <= input.guardrails.maxRetries) {
     await assertMissionStillRunnable(input.missionId);
     await touchMissionHeartbeat(input.missionId);
 
-    workspace = await developerAgent.run({
+    const preparedWorkspace = await developerAgent.prepare({
       missionId: input.missionId,
       candidate: input.candidate,
+      retryIndex: retriesUsed
+    });
+
+    ({ modelCallsUsed, toolCallsUsed } = incrementMetrics(
+      { modelCallsUsed, toolCallsUsed },
+      { modelCalls: 1, toolCalls: preparedWorkspace.cloneSucceeded ? 2 : 1 }
+    ));
+
+    await logMissionEvent({
+      missionId: input.missionId,
+      agentName: developerAgent.name,
+      stage: "execute",
+      action: retriesUsed === 0 ? "prepare_workspace" : "retry_prepare_workspace",
+      toolName: "git clone",
+      inputSummary: input.candidate.cloneUrl ?? input.candidate.repoUrl,
+      outputSummary: preparedWorkspace.cloneSucceeded
+        ? `Workspace prepared on ${preparedWorkspace.branchName ?? "detached branch"} before mutation.`
+        : "Workspace clone failed; mission remains blocked before baseline verification.",
+      success: preparedWorkspace.cloneSucceeded,
+      errorMessage: preparedWorkspace.cloneSucceeded ? undefined : preparedWorkspace.executionNotes.join(" "),
+      retryIndex: retriesUsed
+    });
+
+    baselineVerification = await qaAgent.captureBaseline({
+      workspace: preparedWorkspace
+    });
+
+    ({ modelCallsUsed, toolCallsUsed } = incrementMetrics(
+      { modelCallsUsed, toolCallsUsed },
+      { toolCalls: 1 }
+    ));
+
+    await logMissionEvent({
+      missionId: input.missionId,
+      agentName: qaAgent.name,
+      stage: "verify",
+      action: retriesUsed === 0 ? "capture_baseline" : "retry_capture_baseline",
+      toolName: "verification_engine",
+      inputSummary: "baseline install/build/lint/test",
+      outputSummary: baselineVerification.summary,
+      success: baselineVerification.failedChecks.length === 0,
+      retryIndex: retriesUsed
+    });
+
+    workspace = await developerAgent.apply({
+      missionId: input.missionId,
+      candidate: input.candidate,
+      workspace: preparedWorkspace,
       retryIndex: retriesUsed,
       previousQaNotes: verification?.qaNotes
     });
@@ -69,18 +118,20 @@ async function executeAndVerify(input: {
     changedFilesCount = workspace.changedFiles.length;
     ({ modelCallsUsed, toolCallsUsed } = incrementMetrics(
       { modelCallsUsed, toolCallsUsed },
-      { modelCalls: 1, toolCalls: workspace.cloneSucceeded ? 2 : 1 }
+      { modelCalls: 1, toolCalls: workspace.cloneSucceeded ? 1 : 0 }
     ));
 
     await logMissionEvent({
       missionId: input.missionId,
       agentName: developerAgent.name,
       stage: "execute",
-      action: retriesUsed === 0 ? "prepare_workspace" : "retry_execution",
-      toolName: "git clone",
+      action: retriesUsed === 0 ? "apply_execution_strategy" : "retry_execution",
+      toolName: workspace.appliedAdapterId ?? "execution_engine",
       inputSummary: input.candidate.cloneUrl ?? input.candidate.repoUrl,
       outputSummary: workspace.cloneSucceeded
-        ? `Workspace prepared on ${workspace.branchName ?? "detached branch"} with ${workspace.changedFiles.length} changed files detected.`
+        ? workspace.appliedAdapterId
+          ? `Applied ${workspace.appliedAdapterId} and detected ${workspace.changedFiles.length} changed files.`
+          : `No deterministic adapter matched; ${workspace.changedFiles.length} changed files detected.`
         : "Workspace clone failed; mission remains blocked before verification.",
       success: workspace.cloneSucceeded,
       errorMessage: workspace.cloneSucceeded ? undefined : workspace.executionNotes.join(" "),
@@ -98,7 +149,8 @@ async function executeAndVerify(input: {
 
     verification = await qaAgent.run({
       workspace,
-      guardrails: input.guardrails
+      guardrails: input.guardrails,
+      baselineVerification
     });
 
     await assertMissionStillRunnable(input.missionId);
@@ -119,6 +171,12 @@ async function executeAndVerify(input: {
         buildStatus: verification.buildStatus,
         lintStatus: verification.lintStatus,
         testStatus: verification.testStatus,
+        baselineInstallStatus: verification.baselineInstallStatus,
+        baselineBuildStatus: verification.baselineBuildStatus,
+        baselineLintStatus: verification.baselineLintStatus,
+        baselineTestStatus: verification.baselineTestStatus,
+        baselineSummary: verification.baselineSummary,
+        regressionDetected: verification.regressionDetected,
         criteriaMet: verification.criteriaMet,
         qaDecision: verification.qaDecision,
         qaNotes: verification.qaNotes
@@ -128,6 +186,12 @@ async function executeAndVerify(input: {
         buildStatus: verification.buildStatus,
         lintStatus: verification.lintStatus,
         testStatus: verification.testStatus,
+        baselineInstallStatus: verification.baselineInstallStatus,
+        baselineBuildStatus: verification.baselineBuildStatus,
+        baselineLintStatus: verification.baselineLintStatus,
+        baselineTestStatus: verification.baselineTestStatus,
+        baselineSummary: verification.baselineSummary,
+        regressionDetected: verification.regressionDetected,
         criteriaMet: verification.criteriaMet,
         qaDecision: verification.qaDecision,
         qaNotes: verification.qaNotes
@@ -275,7 +339,7 @@ async function executeMissionRun(input: {
       success: true
     });
 
-    const ranked = plannerAgent.rankCandidates(discovered);
+    const ranked = await plannerAgent.rankCandidates(discovered);
     ({ modelCallsUsed, toolCallsUsed } = incrementMetrics({ modelCallsUsed, toolCallsUsed }, { modelCalls: 1, toolCalls: 1 }));
 
     const selected = plannerAgent.chooseCandidate({
@@ -284,7 +348,9 @@ async function executeMissionRun(input: {
       guardrails
     });
 
-    for (const { candidate, score } of ranked) {
+    for (const rankedCandidate of ranked) {
+      const { candidate, score, support } = rankedCandidate;
+
       await prisma.candidateTask.create({
         data: {
           missionId: input.missionId,
@@ -295,6 +361,9 @@ async function executeMissionRun(input: {
           labels: JSON.stringify(candidate.labels),
           score: score.total,
           confidence: score.confidence,
+          executionSupported: support.supported,
+          executionAdapterId: support.adapterId,
+          taskCategory: support.taskCategory,
           reasonSelected: selected?.candidate.issueUrl === candidate.issueUrl ? score.selectedReason ?? null : null,
           reasonRejected: selected?.candidate.issueUrl === candidate.issueUrl ? null : score.rejectedReason ?? "Ranked below threshold.",
           status: selected?.candidate.issueUrl === candidate.issueUrl ? CandidateStatus.SELECTED : CandidateStatus.REJECTED

@@ -7,14 +7,22 @@ import type { DiscoveryCandidate, WorkspacePreparation } from "@/lib/types";
 export class DeveloperAgent {
   readonly name = "Developer Agent";
 
-  async run(input: {
+  async prepare(input: {
     missionId: string;
     candidate: DiscoveryCandidate;
     retryIndex?: number;
+  }): Promise<WorkspacePreparation> {
+    return prepareWorkspace(input.missionId, input.candidate, input.retryIndex ?? 0);
+  }
+
+  async apply(input: {
+    missionId: string;
+    candidate: DiscoveryCandidate;
+    workspace: WorkspacePreparation;
+    retryIndex?: number;
     previousQaNotes?: string;
   }): Promise<WorkspacePreparation> {
-    const preparedWorkspace = await prepareWorkspace(input.missionId, input.candidate, input.retryIndex ?? 0);
-    const workspace = await executeCandidateWork(preparedWorkspace, input.candidate);
+    const workspace = await executeCandidateWork(input.workspace, input.candidate);
 
     await writeArtifact(`missions/${input.missionId}.execution-plan.md`, [
       `# Execution Plan`,
@@ -53,5 +61,18 @@ export class DeveloperAgent {
     ].join("\n"));
 
     return workspace;
+  }
+
+  async run(input: {
+    missionId: string;
+    candidate: DiscoveryCandidate;
+    retryIndex?: number;
+    previousQaNotes?: string;
+  }): Promise<WorkspacePreparation> {
+    const preparedWorkspace = await this.prepare(input);
+    return this.apply({
+      ...input,
+      workspace: preparedWorkspace
+    });
   }
 }

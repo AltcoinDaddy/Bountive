@@ -22,15 +22,15 @@ const badgeVariants = cva(
 function inferTone(value: string) {
   const lower = value.toLowerCase();
 
-  if (["completed", "approved", "passed", "draft_ready", "live_submitted", "selected"].includes(lower)) {
+  if (["completed", "approved", "passed", "draft_ready", "live_submitted", "selected", "supported"].includes(lower)) {
     return "success" as const;
   }
 
-  if (["running", "pending", "verify", "submit", "retry_required", "skipped", "live_pending"].includes(lower)) {
+  if (["running", "pending", "verify", "submit", "retry_required", "skipped", "live_pending", "allowlisted"].includes(lower)) {
     return "warning" as const;
   }
 
-  if (["failed", "aborted", "rejected", "blocked", "halted"].includes(lower)) {
+  if (["failed", "aborted", "rejected", "blocked", "halted", "unsupported"].includes(lower)) {
     return "danger" as const;
   }
 

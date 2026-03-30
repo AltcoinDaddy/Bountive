@@ -3,8 +3,11 @@ import { defaultMissionInput, runMission } from "@/lib/orchestrator";
 async function main() {
   const missionId = await runMission({
     ...defaultMissionInput(),
-    title: "Verification summary test repair mission",
-    labels: ["tests"]
+    title: "Real GitHub commitlint mission",
+    mode: "live",
+    labels: ["dx", "ci/cd"],
+    allowlistedRepos: ["LFGBanditLabs/Quipay"],
+    liveSubmissionEnabled: false
   });
 
   console.log(`mission_id=${missionId}`);

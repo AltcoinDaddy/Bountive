@@ -12,13 +12,8 @@
     "db:seed": "prisma db seed",
     "prisma:generate": "prisma generate",
     "seed": "tsx prisma/seed.ts",
-    "mission:enqueue-sample": "tsx scripts/enqueue-sample-mission.ts",
-    "mission:sample": "tsx scripts/run-sample-mission.ts",
-    "mission:cli": "tsx scripts/run-cli-mission.ts",
-    "mission:config": "tsx scripts/run-config-mission.ts",
-    "mission:structured": "tsx scripts/run-structured-mission.ts",
-    "mission:structured-json": "tsx scripts/run-structured-json-mission.ts",
-    "mission:test": "tsx scripts/run-test-mission.ts",
+    "mission:real-dx": "tsx scripts/run-real-dx-mission.ts",
+    "mission:real-commitlint": "tsx scripts/run-real-commitlint-mission.ts",
     "mission:recover": "tsx scripts/recover-stale-missions.ts",
     "mission:drain": "tsx scripts/run-mission-worker.ts --once",
     "mission:worker": "tsx scripts/run-mission-worker.ts"
@@ -26,6 +21,7 @@
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "@prisma/client": "^6.6.0",
+    "better-auth": "^1.5.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",

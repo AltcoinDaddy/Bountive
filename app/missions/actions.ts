@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { abortMission, recoverStaleRunningMissions } from "@/lib/mission-queue";
 import { enqueueMission, processNextQueuedMission } from "@/lib/orchestrator";
-import { requireOperatorSession, setOperatorSession } from "@/lib/auth";
+import { requireOperatorSession } from "@/lib/auth";
 import { assertLiveMissionConfigured } from "@/lib/live-submission-readiness";
 import type { MissionInput } from "@/lib/types";
+import { env } from "@/lib/env";
 import { updateDefaultWorkspacePolicy } from "@/lib/workspace-manager";
 
 function readBoolean(value: FormDataEntryValue | null) {
@@ -29,7 +30,7 @@ function revalidateMissionSurfaces() {
 }
 
 export async function launchMissionAction(formData: FormData) {
-  const session = await requireOperatorSession("/missions");
+  await requireOperatorSession("/missions");
   const payload: MissionInput = {
     title: String(formData.get("title") ?? "Autonomous issue mission"),
     mode: formData.get("mode") === "live" ? "live" : "dry_run",
@@ -61,10 +62,6 @@ export async function launchMissionAction(formData: FormData) {
     redirect(`/missions?launchError=${encodeURIComponent(message)}`);
   }
 
-  if (session.operatorEmail) {
-    await setOperatorSession(session.operatorEmail);
-  }
-
   const missionId = await enqueueMission(payload);
 
   revalidateMissionSurfaces();
@@ -74,7 +71,9 @@ export async function launchMissionAction(formData: FormData) {
 
 export async function updateWorkspacePolicyAction(formData: FormData) {
   const session = await requireOperatorSession("/missions");
-  const operatorEmail = String(formData.get("operatorEmail") ?? session.operatorEmail ?? "").trim().toLowerCase();
+  const operatorEmail = env.authMode === "better-auth"
+    ? String(session.operatorEmail ?? "").trim().toLowerCase()
+    : String(formData.get("operatorEmail") ?? session.operatorEmail ?? "").trim().toLowerCase();
   const allowedTaskCategories = String(formData.get("allowedTaskCategories") ?? "")
     .split(",")
     .map((entry) => entry.trim())
@@ -93,7 +92,6 @@ export async function updateWorkspacePolicyAction(formData: FormData) {
     maxPatchFiles,
     allowedTaskCategories
   });
-  await setOperatorSession(operatorEmail);
 
   revalidateMissionSurfaces();
   redirect("/missions?policyUpdated=1");

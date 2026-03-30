@@ -2,7 +2,10 @@
   "agent_name": "Bountive Operator",
   "description": "Autonomous GitHub-first task bounty operator for safe, budget-aware software missions.",
   "operator_wallet": "0x0000000000000000000000000000000000000000",
+  "network": "base-sepolia",
   "identity_reference": "bountive-operator-dev",
+  "registration_tx_hash": null,
+  "manifest_uri": "artifacts/generated/agent.json",
   "supported_tools": [
     "github",
     "git",
@@ -10,13 +13,14 @@
     "pnpm",
     "yarn",
     "prisma",
-    "sqlite"
+    "sqlite",
+    "postgresql",
+    "redis"
   ],
   "supported_task_categories": [
-    "bug",
-    "documentation",
-    "tests",
-    "small refactors"
+    "configuration",
+    "developer-experience copy",
+    "documentation"
   ],
   "compute_budget": {
     "max_model_calls": 20,
@@ -35,5 +39,6 @@
     "dry_run",
     "live"
   ],
+  "proof_format_version": "bountive-proof/v1",
   "version": "0.1.0"
 }

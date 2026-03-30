@@ -1,9 +1,11 @@
 import { PageHeader } from "@/components/page-header";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { BetterAuthForm } from "@/components/better-auth-form";
 import { SurfaceCard } from "@/components/surface-card";
 import { env } from "@/lib/env";
 import { getOperatorSession } from "@/lib/auth";
 import { signInAction } from "@/app/auth/actions";
+import { redirect } from "next/navigation";
 
 export default async function SignInPage({
   searchParams
@@ -14,6 +16,10 @@ export default async function SignInPage({
   const error = typeof params.error === "string" ? params.error : null;
   const next = typeof params.next === "string" ? params.next : "/dashboard";
   const session = await getOperatorSession();
+
+  if (env.authMode === "better-auth" && session.isAuthenticated) {
+    redirect((next.startsWith("/") ? next : "/dashboard") as never);
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] px-4 py-10 sm:px-6 lg:px-8">
@@ -34,8 +40,9 @@ export default async function SignInPage({
                 </div>
               </div>
               <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-                Local sign-in keeps the operator identity explicit in a cookie-backed session. When no cookie is present,
-                Bountive can still fall back to the configured operator email for local development.
+                {env.authMode === "better-auth"
+                  ? "Better Auth provides real email and password authentication backed by Prisma sessions so protected operator actions stop depending on local cookie shortcuts."
+                  : "Local sign-in keeps the operator identity explicit in a cookie-backed session. When no cookie is present, Bountive can still fall back to the configured operator email for local development."}
               </p>
               <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel-muted)] p-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">Current operator</div>
@@ -44,27 +51,31 @@ export default async function SignInPage({
               </div>
             </div>
 
-            <form action={signInAction} className="space-y-4 rounded-[24px] border border-[var(--border)] bg-white p-5">
-              <input type="hidden" name="next" value={next} />
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-[var(--foreground)]">Operator email</span>
-                <input
-                  name="operatorEmail"
-                  type="email"
-                  defaultValue={session.operatorEmail ?? env.operatorEmail}
-                  placeholder="operator@company.com"
-                  className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors focus:border-[var(--primary)]"
-                />
-              </label>
+            {env.authMode === "better-auth" ? (
+              <BetterAuthForm next={next} defaultEmail={session.operatorEmail ?? env.operatorEmail} />
+            ) : (
+              <form action={signInAction} className="space-y-4 rounded-[24px] border border-[var(--border)] bg-white p-5">
+                <input type="hidden" name="next" value={next} />
+                <label className="space-y-2">
+                  <span className="text-sm font-medium text-[var(--foreground)]">Operator email</span>
+                  <input
+                    name="operatorEmail"
+                    type="email"
+                    defaultValue={session.operatorEmail ?? env.operatorEmail}
+                    placeholder="operator@company.com"
+                    className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors focus:border-[var(--primary)]"
+                  />
+                </label>
 
-              {error ? (
-                <div className="rounded-2xl border border-[rgba(180,83,9,0.3)] bg-[rgba(180,83,9,0.08)] px-4 py-3 text-sm text-[var(--foreground)]">
-                  {error}
-                </div>
-              ) : null}
+                {error ? (
+                  <div className="rounded-2xl border border-[rgba(180,83,9,0.3)] bg-[rgba(180,83,9,0.08)] px-4 py-3 text-sm text-[var(--foreground)]">
+                    {error}
+                  </div>
+                ) : null}
 
-              <FormSubmitButton label="Sign in" pendingLabel="Signing in..." />
-            </form>
+                <FormSubmitButton label="Sign in" pendingLabel="Signing in..." />
+              </form>
+            )}
           </div>
         </SurfaceCard>
       </div>

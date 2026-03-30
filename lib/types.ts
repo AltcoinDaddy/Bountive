@@ -76,10 +76,29 @@ export type VerificationResult = {
   buildStatus: CheckStatus;
   lintStatus: CheckStatus;
   testStatus: CheckStatus;
+  baselineInstallStatus: CheckStatus;
+  baselineBuildStatus: CheckStatus;
+  baselineLintStatus: CheckStatus;
+  baselineTestStatus: CheckStatus;
+  baselineSummary: string;
+  regressionDetected: boolean;
+  newFailures: string[];
+  resolvedFailures: string[];
+  preservedFailures: string[];
   criteriaMet: boolean;
   qaDecision: QADecision;
   qaNotes: string;
   summary: string;
+};
+
+export type VerificationSnapshot = {
+  installStatus: CheckStatus;
+  buildStatus: CheckStatus;
+  lintStatus: CheckStatus;
+  testStatus: CheckStatus;
+  notes: string;
+  summary: string;
+  failedChecks: string[];
 };
 
 export type SubmissionArtifact = {

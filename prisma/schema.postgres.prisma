@@ -113,6 +113,68 @@ model Workspace {
   @@map("workspaces")
 }
 
+model AuthUser {
+  id            String        @id
+  name          String
+  email         String        @unique
+  emailVerified Boolean       @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  accounts      AuthAccount[]
+  sessions      AuthSession[]
+
+  @@map("auth_users")
+}
+
+model AuthSession {
+  id        String    @id
+  expiresAt DateTime  @map("expires_at")
+  token     String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  userId    String    @map("user_id")
+  user      AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model AuthAccount {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model AuthVerification {
+  id         String   @id
+  identifier String   @map("identifier")
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("auth_verifications")
+}
+
 model ApprovalPolicy {
   id                         String    @id @default(cuid())
   workspaceId                String    @unique @map("workspace_id")
@@ -138,6 +200,9 @@ model CandidateTask {
   labels           String
   score            Float
   confidence       Float
+  executionSupported Boolean       @default(false) @map("execution_supported")
+  executionAdapterId String?       @map("execution_adapter_id")
+  taskCategory     String?         @map("task_category")
   reasonSelected   String?         @map("reason_selected")
   reasonRejected   String?         @map("reason_rejected")
   status           CandidateStatus @default(DISCOVERED)
@@ -169,18 +234,24 @@ model AgentEventLog {
 }
 
 model VerificationReport {
-  id            String      @id @default(cuid())
-  missionId     String      @unique @map("mission_id")
-  installStatus CheckStatus @default(PENDING) @map("install_status")
-  buildStatus   CheckStatus @default(PENDING) @map("build_status")
-  lintStatus    CheckStatus @default(PENDING) @map("lint_status")
-  testStatus    CheckStatus @default(PENDING) @map("test_status")
-  criteriaMet   Boolean     @default(false) @map("criteria_met")
-  qaDecision    QADecision  @default(REJECTED) @map("qa_decision")
-  qaNotes       String      @default("") @map("qa_notes")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-  mission       Mission     @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  id                    String      @id @default(cuid())
+  missionId             String      @unique @map("mission_id")
+  installStatus         CheckStatus @default(PENDING) @map("install_status")
+  buildStatus           CheckStatus @default(PENDING) @map("build_status")
+  lintStatus            CheckStatus @default(PENDING) @map("lint_status")
+  testStatus            CheckStatus @default(PENDING) @map("test_status")
+  baselineInstallStatus CheckStatus @default(SKIPPED) @map("baseline_install_status")
+  baselineBuildStatus   CheckStatus @default(SKIPPED) @map("baseline_build_status")
+  baselineLintStatus    CheckStatus @default(SKIPPED) @map("baseline_lint_status")
+  baselineTestStatus    CheckStatus @default(SKIPPED) @map("baseline_test_status")
+  baselineSummary       String      @default("") @map("baseline_summary")
+  regressionDetected    Boolean     @default(false) @map("regression_detected")
+  criteriaMet           Boolean     @default(false) @map("criteria_met")
+  qaDecision            QADecision  @default(REJECTED) @map("qa_decision")
+  qaNotes               String      @default("") @map("qa_notes")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+  mission               Mission     @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
   @@map("verification_reports")
 }

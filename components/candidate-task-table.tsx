@@ -20,6 +20,7 @@ export function CandidateTaskTable({ tasks }: { tasks: CandidateTaskRow[] }) {
                 <th className="px-3 py-3 font-semibold">Issue</th>
                 <th className="px-3 py-3 font-semibold">Score</th>
                 <th className="px-3 py-3 font-semibold">Confidence</th>
+                <th className="px-3 py-3 font-semibold">Execution</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
                 <th className="px-3 py-3 font-semibold">Reason</th>
               </tr>
@@ -39,6 +40,17 @@ export function CandidateTaskTable({ tasks }: { tasks: CandidateTaskRow[] }) {
                     </td>
                     <td className="px-3 py-4 text-sm font-semibold text-[var(--foreground)]">{task.score.toFixed(0)}</td>
                     <td className="px-3 py-4 text-sm font-semibold text-[var(--foreground)]">{task.confidence.toFixed(2)}</td>
+                    <td className="px-3 py-4">
+                      <div className="flex flex-col gap-2">
+                        <StatusBadge value={task.executionSupported ? "supported" : "unsupported"} />
+                        <div className="text-xs leading-5 text-[var(--muted-foreground)]">
+                          {task.executionAdapterId ?? "No adapter matched"}
+                        </div>
+                        <div className="text-xs uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                          {task.taskCategory ?? "Unclassified"}
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-3 py-4"><StatusBadge value={task.status} /></td>
                     <td className="px-3 py-4 text-sm leading-6 text-[var(--muted-foreground)]">
                       {task.reasonSelected ?? task.reasonRejected ?? "No rationale recorded."}

@@ -3,8 +3,8 @@ import { defaultMissionInput, runMission } from "@/lib/orchestrator";
 async function main() {
   const missionId = await runMission({
     ...defaultMissionInput(),
-    title: "Config defaults repair mission",
-    labels: ["configuration"]
+    title: "Real GitHub DX mission",
+    labels: ["good first issue", "dx"]
   });
 
   console.log(`mission_id=${missionId}`);

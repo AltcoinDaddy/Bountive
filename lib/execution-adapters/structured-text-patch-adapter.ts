@@ -37,6 +37,16 @@ export const structuredTextPatchAdapter: ExecutionAdapter = {
   id: "structured-text-patch",
   label: "Structured text patch adapter",
   taskCategory: "documentation",
+  assessCandidate(candidate) {
+    const patch = getStructuredPatch(candidate);
+
+    return {
+      supported: Boolean(patch?.target && patch.before && patch.after),
+      reason: patch
+        ? `Issue body supplied a bounded text patch contract for ${patch.target}.`
+        : "Issue body does not provide the structured text patch directives required by this adapter."
+    };
+  },
   match(candidate, workspace) {
     if (!workspace.repositoryPath) {
       return {

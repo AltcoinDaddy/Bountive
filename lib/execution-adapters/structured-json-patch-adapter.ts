@@ -59,6 +59,16 @@ export const structuredJsonPatchAdapter: ExecutionAdapter = {
   id: "structured-json-patch",
   label: "Structured JSON patch adapter",
   taskCategory: "configuration",
+  assessCandidate(candidate) {
+    const patch = getStructuredJsonPatch(candidate);
+
+    return {
+      supported: Boolean(patch?.target && patch.path.length > 0),
+      reason: patch
+        ? `Issue body supplied a bounded JSON patch contract for ${patch.target}.`
+        : "Issue body does not provide the structured JSON patch directives required by this adapter."
+    };
+  },
   match(candidate, workspace) {
     if (!workspace.repositoryPath) {
       return {

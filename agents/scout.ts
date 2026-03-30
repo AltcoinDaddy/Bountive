@@ -8,7 +8,7 @@ export class ScoutAgent {
     return discoverGithubIssues(
       input.labels,
       input.maxCandidates,
-      input.mode === "live" ? input.allowlistedRepos : undefined
+      input.allowlistedRepos.length > 0 ? input.allowlistedRepos : undefined
     );
   }
 }

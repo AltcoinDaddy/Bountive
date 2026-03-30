@@ -257,7 +257,7 @@ Future Codex runs should respect the current intentional limits:
 
 - The Developer Agent is conservative and does not yet perform broad autonomous code editing across arbitrary repos.
 - Live PR submission is architected for future support but should remain behind config and explicit safeguards.
-- Offline development should continue to work through local GitHub discovery fixtures when no token is available.
+- GitHub discovery should remain real-data-only and require a configured token rather than falling back to local fixtures.
 - The system should remain easy to run locally with minimal setup.
 
 Do not “fake” autonomy with misleading UI claims. If a capability is partial, represent it honestly.

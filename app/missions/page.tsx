@@ -1,5 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { ExecutionCapabilityCard } from "@/components/execution-capability-card";
+import { GithubAccessCard } from "@/components/github-access-card";
 import { LiveSubmissionReadinessCard } from "@/components/live-submission-readiness-card";
 import { LiveRepoValidationCard } from "@/components/live-repo-validation-card";
 import { MissionHistoryTable } from "@/components/mission-history-table";
@@ -12,9 +13,11 @@ import { EmptyState } from "@/components/empty-state";
 import { WorkspacePolicyEditorCard } from "@/components/workspace-policy-editor-card";
 import { WorkspacePolicyCard } from "@/components/workspace-policy-card";
 import { WorkerQueueCard } from "@/components/worker-queue-card";
+import { getOperatorSession } from "@/lib/auth";
 import { getQueueMetrics } from "@/lib/mission-queue";
 import { getMissionHistory, getMissionSummary, readMissionConfig } from "@/lib/mission-store";
 import { validateLiveRepoTarget } from "@/lib/github/live-validation";
+import { getWritableGithubRepos } from "@/lib/github/writable-repos";
 import { getRuntimeProfile } from "@/lib/runtime-profile";
 import { getWorkspaceOverview } from "@/lib/workspace-manager";
 import { abortMissionAction, launchMissionAction, processQueuedMissionAction, recoverStaleMissionsAction, updateWorkspacePolicyAction } from "@/app/missions/actions";
@@ -32,11 +35,13 @@ export default async function MissionsPage({
   const policyError = typeof params.policyError === "string" ? params.policyError : null;
   const policyUpdated = params.policyUpdated === "1";
 
-  const [missions, selectedMission, queue, workspace] = await Promise.all([
+  const [missions, selectedMission, queue, workspace, session, writableRepos] = await Promise.all([
     getMissionHistory(),
     missionId ? getMissionSummary(missionId) : Promise.resolve(null),
     getQueueMetrics(),
-    getWorkspaceOverview()
+    getWorkspaceOverview(),
+    getOperatorSession(),
+    getWritableGithubRepos()
   ]);
   const selectedMissionConfig = selectedMission ? readMissionConfig(selectedMission.configJson) : null;
   const runtimeProfile = getRuntimeProfile();
@@ -75,11 +80,14 @@ export default async function MissionsPage({
 
       <RuntimeProfileCard profile={runtimeProfile} />
 
+      <GithubAccessCard repos={writableRepos} />
+
       <LiveRepoValidationCard validation={liveValidation} />
 
       <WorkspacePolicyCard workspace={workspace} />
 
       <WorkspacePolicyEditorCard
+        authMode={session.authMode}
         workspace={workspace}
         action={updateWorkspacePolicyAction}
         errorMessage={policyError}

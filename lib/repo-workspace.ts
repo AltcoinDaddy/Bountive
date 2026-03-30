@@ -168,6 +168,20 @@ export async function prepareWorkspace(missionId: string, candidate: DiscoveryCa
 
 function getInstallCommand(repositoryPath: string, packageManager: "npm" | "pnpm" | "yarn") {
   const packageLockPath = join(repositoryPath, "package-lock.json");
+  const detectNpmStrategy = async () => {
+    const hasLockfile = await pathExists(packageLockPath);
+    const changedFiles = await listChangedFiles(repositoryPath);
+    const packageManifestChanged = changedFiles.includes("package.json") || changedFiles.includes("package-lock.json");
+
+    return {
+      command: "npm",
+      args: hasLockfile
+        ? packageManifestChanged
+          ? ["install", "--ignore-scripts", "--no-audit", "--no-fund"]
+          : ["ci", "--ignore-scripts", "--no-audit", "--no-fund"]
+        : ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false"]
+    } as const;
+  };
 
   if (packageManager === "pnpm") {
     return {
@@ -183,12 +197,7 @@ function getInstallCommand(repositoryPath: string, packageManager: "npm" | "pnpm
     } as const;
   }
 
-  return pathExists(packageLockPath).then((hasLockfile) => ({
-    command: "npm",
-    args: hasLockfile
-      ? ["ci", "--ignore-scripts", "--no-audit", "--no-fund"]
-      : ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false"]
-  }));
+  return detectNpmStrategy();
 }
 
 export async function installWorkspaceDependencies(workspace: WorkspacePreparation): Promise<DependencyInstallResult> {

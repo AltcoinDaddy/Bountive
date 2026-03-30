@@ -22,6 +22,10 @@ async function writeJson(path: string, data: unknown) {
 async function main() {
   await ensureDirectories();
 
+  await prisma.authSession.deleteMany();
+  await prisma.authAccount.deleteMany();
+  await prisma.authVerification.deleteMany();
+  await prisma.authUser.deleteMany();
   await prisma.proofRecord.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.verificationReport.deleteMany();
@@ -111,6 +115,9 @@ async function main() {
         labels: JSON.stringify(["good first issue", "documentation"]),
         score: 82,
         confidence: 0.82,
+        executionSupported: true,
+        executionAdapterId: "seeded-demo",
+        taskCategory: "documentation",
         reasonSelected: "Scoped wording improvement with clear reproduction and no migration risk.",
         status: CandidateStatus.SELECTED
       },
@@ -123,6 +130,9 @@ async function main() {
         labels: JSON.stringify(["help wanted"]),
         score: 46,
         confidence: 0.42,
+        executionSupported: false,
+        executionAdapterId: null,
+        taskCategory: null,
         reasonRejected: "Rejected as oversized for MVP compute and patch-size policy.",
         status: CandidateStatus.REJECTED
       }
@@ -196,6 +206,12 @@ async function main() {
       buildStatus: CheckStatus.PASSED,
       lintStatus: CheckStatus.PASSED,
       testStatus: CheckStatus.SKIPPED,
+      baselineInstallStatus: CheckStatus.SKIPPED,
+      baselineBuildStatus: CheckStatus.PASSED,
+      baselineLintStatus: CheckStatus.PASSED,
+      baselineTestStatus: CheckStatus.SKIPPED,
+      baselineSummary: "install=skipped, build=passed, lint=passed, test=skipped",
+      regressionDetected: false,
       criteriaMet: true,
       qaDecision: QADecision.APPROVED,
       qaNotes: "Dry-run mission cleared configured criteria. Submission remains draft-only because live mode is disabled."

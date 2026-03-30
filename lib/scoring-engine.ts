@@ -54,3 +54,31 @@ export function scoreCandidate(candidate: DiscoveryCandidate): CandidateScore {
       : "Rejected because the task does not provide enough clarity for a safe autonomous execution."
   };
 }
+
+export function applyExecutionSupportBias(
+  score: CandidateScore,
+  support: {
+    supported: boolean;
+    adapterLabel?: string | null;
+    taskCategory?: string | null;
+    reason: string;
+  }
+): CandidateScore {
+  if (!support.supported) {
+    return {
+      ...score,
+      total: normalize(score.total - 18),
+      confidence: Number((normalize((score.total - 18) / 100, 0, 1)).toFixed(2)),
+      rejectedReason: score.rejectedReason ?? support.reason
+    };
+  }
+
+  const boostedTotal = normalize(score.total + 12);
+
+  return {
+    ...score,
+    total: boostedTotal,
+    confidence: Number((normalize(boostedTotal / 100, 0, 1)).toFixed(2)),
+    selectedReason: `${score.selectedReason ?? "Candidate is viable."} Execution adapter available: ${support.adapterLabel ?? support.taskCategory ?? "supported task class"}.`
+  };
+}
